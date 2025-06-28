@@ -14,7 +14,7 @@ const slides = [
   },
   {
     id: 2,
-    background: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop&crop=center',
+    background: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     title: 'Master of Details',
     subtitle: 'Every stroke tells a story, every shadow brings emotion to life',
     overlay: 'from-black/50 via-black/30 to-black/50'
