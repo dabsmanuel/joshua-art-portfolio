@@ -22,6 +22,30 @@ interface PricingTier {
   popular?: boolean;
 }
 
+// Move static data outside component to avoid dependency issues
+const processSteps = [
+  {
+    icon: <Mail className="w-6 h-6" />,
+    title: "Initial Consultation",
+    description: "We discuss your vision, review reference photos, and determine the perfect approach for your portrait."
+  },
+  {
+    icon: <Palette className="w-6 h-6" />,
+    title: "Sketch Approval",
+    description: "I create a detailed preliminary sketch for your approval before beginning the final artwork."
+  },
+  {
+    icon: <User className="w-6 h-6" />,
+    title: "Creation Process",
+    description: "Your portrait comes to life through careful layering of graphite and charcoal, with progress updates."
+  },
+  {
+    icon: <CheckCircle className="w-6 h-6" />,
+    title: "Final Review",
+    description: "Final adjustments are made based on your feedback before professional packaging and delivery."
+  }
+];
+
 const PortraitCommissionsPage: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
@@ -102,29 +126,6 @@ const PortraitCommissionsPage: React.FC = () => {
     }
   ];
 
-  const processSteps = [
-    {
-      icon: <Mail className="w-6 h-6" />,
-      title: "Initial Consultation",
-      description: "We discuss your vision, review reference photos, and determine the perfect approach for your portrait."
-    },
-    {
-      icon: <Palette className="w-6 h-6" />,
-      title: "Sketch Approval",
-      description: "I create a detailed preliminary sketch for your approval before beginning the final artwork."
-    },
-    {
-      icon: <User className="w-6 h-6" />,
-      title: "Creation Process",
-      description: "Your portrait comes to life through careful layering of graphite and charcoal, with progress updates."
-    },
-    {
-      icon: <CheckCircle className="w-6 h-6" />,
-      title: "Final Review",
-      description: "Final adjustments are made based on your feedback before professional packaging and delivery."
-    }
-  ];
-
   const testimonials = [
     {
       name: "Maria Rodriguez",
@@ -171,7 +172,7 @@ const PortraitCommissionsPage: React.FC = () => {
       setActiveStep(prev => (prev + 1) % processSteps.length);
     }, 3000);
     return () => clearInterval(timer);
-  }, []);
+  }, []); // Now processSteps.length is available without dependency issues
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">

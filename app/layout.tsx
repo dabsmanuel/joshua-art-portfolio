@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "@/providers/QueryCLient";
 import Header from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer/Footer";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header isScrolled={true} />
-        {children}
-        <Footer/>
+        <Providers>
+          <Header isScrolled={true} />
+          {children}
+          <Footer/>
+          <Toaster/>
+        </Providers>
       </body>
     </html>
   );
