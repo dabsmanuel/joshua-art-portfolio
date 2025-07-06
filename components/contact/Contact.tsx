@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, Clock, Send, User, Heart, CheckCircle, AlertCircle, Feather } from 'lucide-react';
+import { Mail, MapPin, Clock, Send, User, Heart, CheckCircle, AlertCircle, Feather } from 'lucide-react';
 import { LuFacebook, LuInstagram } from 'react-icons/lu';
 import { FaXTwitter, FaTiktok } from 'react-icons/fa6';
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { Mail, Phone, MapPin, Heart, Feather } from 'lucide-react';
+import { Mail,  MapPin, Heart, Feather } from 'lucide-react';
 import { LuFacebook, LuInstagram } from "react-icons/lu";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
 import { SocialButtonProps, ContactItemProps } from '@/types';
