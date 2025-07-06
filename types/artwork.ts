@@ -40,26 +40,26 @@ export interface ArtworkImagesResponse {
 export interface ArtworkResponse {
   id: string;
   title: string;
-  category: 'portraits' | 'landscapes' | 'still-life' | 'sketches';
+  description: string;
+  category: string;
   medium: string;
   dimensions: string;
   year: number;
-  description: string;
+  price: string | null;
   tags: string[];
+  images: ArtworkImageData[];
+  primaryImage: ArtworkImageData | null;
+  // Note: featured and sold are mutually exclusive
   featured: boolean;
   sold: boolean;
-  price?: string;
-  images?: ImageData[];
-  primaryImage?: ImageData | null;
   availableOnPrint: boolean;
-  printSizes: { size: string; price: string }[];
-  // Additional properties from your response
-  createdAt?: string;
-  createdBy?: string;
-  isActive?: boolean;
-  slug?: string;
-  updatedAt?: string;
-  views?: number;
+  printSizes: { size: 'small' | 'large' | 'extra large'; price: string }[];
+  slug: string;
+  views: number;
+  createdBy: { name: string; email: string } | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ArtworkData {

@@ -57,7 +57,6 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
     console.log('Editing Artwork:', editingArtwork);
   }, [artworksData, editingArtwork]);
 
-  // In components/admin/artworks/list/AdminList.tsx
   const handleEdit = (artwork: ArtworkResponse) => {
   console.log('Setting editingArtwork:', artwork);
   if (!artwork.id) { // Changed from artwork.id to artwork._id
@@ -144,14 +143,14 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
         </div>
       </div>
 
-      {debugMode && (
+      {/* {debugMode && (
         <div className="mb-6 bg-white p-4 rounded-lg shadow">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Debug Info</h3>
           <pre className="text-sm text-gray-600 bg-gray-50 p-2 rounded-md overflow-auto">
             {JSON.stringify(artworksData, null, 2) || 'No data received'}
           </pre>
         </div>
-      )}
+      )} */}
 
       <div className="mb-6 space-y-4">
         <div className="flex gap-4">

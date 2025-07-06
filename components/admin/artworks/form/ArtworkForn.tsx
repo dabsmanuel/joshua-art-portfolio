@@ -28,16 +28,31 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
     year: artwork?.year?.toString() || '',
     price: artwork?.price ? String(artwork.price) : '',
     tags: artwork?.tags?.map(tag => tag.replace(/[\[\]"]+/g, '')).join(', ') || '',
-    featured: artwork?.featured ? 'true' : 'false',
-    sold: artwork?.sold ? 'true' : 'false',
+    status: artwork?.featured ? 'featured' : artwork?.sold ? 'sold' : 'none',
     availableOnPrint: artwork?.availableOnPrint ? 'true' : 'false',
-    printSizes: artwork?.printSizes ? JSON.stringify(artwork.printSizes) : '[]',
+    printSizes: {
+      small: { selected: false, price: '' },
+      large: { selected: false, price: '' },
+      extraLarge: { selected: false, price: '' },
+    },
   });
 
   const [keepExistingImages, setKeepExistingImages] = useState(true);
 
   useEffect(() => {
-    console.log('ArtworkForm received artwork:', artwork);
+    if (artwork?.printSizes) {
+      const initialPrintSizes = {
+        small: { selected: false, price: '' },
+        large: { selected: false, price: '' },
+        extraLarge: { selected: false, price: '' },
+      };
+      artwork.printSizes.forEach(({ size, price }) => {
+        if (size === 'small') initialPrintSizes.small = { selected: true, price };
+        if (size === 'large') initialPrintSizes.large = { selected: true, price };
+        if (size === 'extra large') initialPrintSizes.extraLarge = { selected: true, price };
+      });
+      setFormData(prev => ({ ...prev, printSizes: initialPrintSizes }));
+    }
   }, [artwork]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -45,38 +60,63 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePrintSizeChange = (size: 'small' | 'large' | 'extraLarge', field: 'selected' | 'price', value: boolean | string) => {
+    setFormData(prev => ({
+      ...prev,
+      printSizes: {
+        ...prev.printSizes,
+        [size]: {
+          ...prev.printSizes[size],
+          [field]: value,
+        },
+      },
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  const data = new FormData();
+    e.preventDefault();
+    const data = new FormData();
 
-  // Append artwork fields
-  Object.entries(formData).forEach(([key, value]) => {
-    if (key === 'price' && value === '') {
-      return; // Skip empty price
-    }
-    if (key === 'tags' && value) {
-      data.append(key, value.split(',').map(tag => tag.trim()).join(',')); // Ensure clean tags
-    } else {
-      data.append(key, value);
-    }
-  });
-
-  // Append keepExistingImages for edit mode
-  if (mode === 'edit') {
-    data.append('keepExistingImages', 'true'); // Default to true for POST
-  }
-
-  // Append new images
-  const imageInput = document.querySelector<HTMLInputElement>('#images');
-  if (imageInput?.files) {
-    Array.from(imageInput.files).forEach(file => {
-      data.append('images', file);
+    // Append artwork fields
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === 'price' && value === '') {
+        return; // Skip empty price
+      }
+      if (key === 'tags' && typeof value === 'string' && value) {
+        data.append(key, value.split(',').map(tag => tag.trim()).join(',')); // Ensure clean tags
+      } else if (key === 'status') {
+        data.append('featured', value === 'featured' ? 'true' : 'false');
+        data.append('sold', value === 'sold' ? 'true' : 'false');
+      } else if (key === 'printSizes') {
+        if (formData.availableOnPrint === 'true') {
+          const printSizesArray = Object.entries(value)
+            .filter(([_, sizeData]: [string, any]) => sizeData.selected && sizeData.price)
+            .map(([size, sizeData]: [string, any]) => ({
+              size: size === 'extraLarge' ? 'extra large' : size,
+              price: sizeData.price,
+            }));
+          data.append('printSizes', JSON.stringify(printSizesArray));
+        } else {
+          data.append('printSizes', JSON.stringify([]));
+        }
+      } else {
+        data.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
+      }
     });
-  }
 
-  // Log FormData entries
-  console.log('FormData entries:', Array.from(data.entries()));
-  onSubmit(data);
+    if (mode === 'edit') {
+      data.append('keepExistingImages', keepExistingImages.toString());
+    }
+
+    const imageInput = document.querySelector<HTMLInputElement>('#images');
+    if (imageInput?.files) {
+      Array.from(imageInput.files).forEach(file => {
+        data.append('images', file);
+      });
+    }
+
+    console.log('FormData entries:', Array.from(data.entries()));
+    onSubmit(data);
   };
 
   return (
@@ -169,7 +209,7 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
                 value={formData.dimensions}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray- introverted-transparent"
               />
             </div>
 
@@ -252,34 +292,19 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
             </div>
 
             <div>
-              <label htmlFor="featured" className="block text-sm font-medium text-gray-700">
-                Featured
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                Status
               </label>
               <select
-                id="featured"
-                name="featured"
-                value={formData.featured}
+                id="status"
+                name="status"
+                value={formData.status}
                 onChange={handleChange}
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
               >
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="sold" className="block text-sm font-medium text-gray-700">
-                Sold
-              </label>
-              <select
-                id="sold"
-                name="sold"
-                value={formData.sold}
-                onChange={handleChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-              >
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+                <option value="none">None</option>
+                <option value="featured">Featured</option>
+                <option value="sold">Sold</option>
               </select>
             </div>
 
@@ -299,19 +324,37 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
               </select>
             </div>
 
-            <div>
-              <label htmlFor="printSizes" className="block text-sm font-medium text-gray-700">
-                Print Sizes (JSON format)
-              </label>
-              <textarea
-                id="printSizes"
-                name="printSizes"
-                value={formData.printSizes}
-                onChange={handleChange}
-                rows={4}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
-              />
-            </div>
+            {formData.availableOnPrint === 'true' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Print Sizes and Prices
+                </label>
+                <div className="mt-2 space-y-2">
+                  {(['small', 'large', 'extraLarge'] as const).map(size => (
+                    <div key={size} className="flex items-center gap-4">
+                      <input
+                        type="checkbox"
+                        id={`printSize-${size}`}
+                        checked={formData.printSizes[size].selected}
+                        onChange={(e) => handlePrintSizeChange(size, 'selected', e.target.checked)}
+                        className="h-4 w-4 text-gray-800 focus:ring-gray-800 border-gray-300 rounded"
+                      />
+                      <label htmlFor={`printSize-${size}`} className="text-sm font-medium text-gray-700">
+                        {size === 'extraLarge' ? 'Extra Large' : size.charAt(0).toUpperCase() + size.slice(1)}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Price (£)"
+                        value={formData.printSizes[size].price}
+                        onChange={(e) => handlePrintSizeChange(size, 'price', e.target.value)}
+                        disabled={!formData.printSizes[size].selected}
+                        className="mt-1 w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:bg-gray- introverted"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-4 mt-6">
               <button

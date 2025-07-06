@@ -164,7 +164,7 @@ export const ArtworkImageManager: React.FC<ArtworkImageManagerProps> = ({
                           Primary
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleSetPrimary(image.publicId)}
                           disabled={isSettingPrimary || image.publicId === typedImagesData?.primaryImage?.publicId}
