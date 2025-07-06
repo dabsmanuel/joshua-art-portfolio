@@ -43,12 +43,6 @@ const ContactPage: React.FC = () => {
       link: 'mailto:Joshuaotuonye98@gmail.com',
     },
     {
-      icon: <Phone className="w-5 h-5" />,
-      label: 'Phone',
-      value: '+44 7990 136683',
-      link: 'tel:+447990136683',
-    },
-    {
       icon: <MapPin className="w-5 h-5" />,
       label: 'Studio Location',
       value: '320 Devon Road, Luton, United Kingdom',

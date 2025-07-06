@@ -71,12 +71,6 @@ const Footer = () => {
       href: 'mailto:Joshuaotuonye98@gmail.com'
     },
     { 
-      icon: Phone, 
-      label: 'Phone', 
-      value: '+44 7990 136683',
-      href: 'tel:+447990136683'
-    },
-    { 
       icon: MapPin, 
       label: 'Location', 
       value: '320 Devon Road, Luton, United Kingdom'
