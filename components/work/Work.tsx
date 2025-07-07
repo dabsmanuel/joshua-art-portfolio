@@ -358,14 +358,14 @@ const WorkPage: React.FC = () => {
                   <div className="relative bg-gradient-to-br from-gray-800/40 to-gray-700/40 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-600/30 group-hover:shadow-xl transition-all duration-300">
                     <div className="absolute -inset-2 bg-gradient-to-r from-amber-600/20 to-blue-６00/20 rounded-3xl blur-lg group-hover:blur-xl transition-all duration-500"></div>
                     <div className="relative p-4">
-                      <div className="aspect-[1/1] relative bg-gray-900 rounded-lg overflow-hidden">
+                      <div className="relative aspect-auto bg-gray-900 rounded-lg overflow-hidden">
                         {imageUrl ? (
                           <Image
                             src={imageUrl}
                             alt={imageAlt}
                             height={500}
                             width={500}
-                            className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700"
+                            className="w-full h-full object-cover transition-all duration-700"
                             loading="lazy"
                             onLoad={() => console.log(`Image loaded successfully for ${artwork.title}`)}
                             onError={(e) => {
@@ -453,14 +453,14 @@ const WorkPage: React.FC = () => {
                     <div className="absolute -inset-2 bg-gradient-to-r from-amber-600/20 to-blue-600/20 rounded-3xl blur-lg group-hover:blur-xl transition-all duration-500"></div>
                     <div className="relative flex flex-col md:flex-row gap-6 p-6">
                       <div className="md:w-1/3">
-                        <div className="aspect-[1/1] relative bg-gray-900 rounded-lg overflow-hidden">
+                        <div className="relative bg-gray-900 rounded-lg overflow-hidden">
                           {imageUrl ? (
                             <Image
                               src={imageUrl}
                               alt={imageAlt}
                               width={500}
                               height={500}
-                              className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-700"
+                              className="w-full h-full object-cover transition-all duration-700"
                               loading="lazy"
                               onError={(e) => {
                                 console.error(`List view image failed to load for ${artwork.title}: ${imageUrl}`);
@@ -643,14 +643,14 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onClose, o
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="relative">
                   <div className="absolute -inset-2 bg-gradient-to-r from-amber-600/20 to-blue-600/20 rounded-2xl blur-lg"></div>
-                  <div className="relative aspect-[1/1] bg-gray-900 rounded-lg overflow-hidden">
+                  <div className="relative bg-gray-900 rounded-lg overflow-hidden">
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
                         alt={imageAlt}
                         width={500}
                         height={500}
-                        className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-700"
+                        className="w-full h-full object-cover transition-all duration-700"
                         loading="lazy"
                         onError={(e) => {
                           console.error(`Modal image failed to load for ${artwork.title}: ${imageUrl}`);

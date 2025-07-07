@@ -12,7 +12,7 @@ interface WorkProps {
 }
 
 const Work: React.FC<WorkProps> = ({ visibleElements = new Set() }) => {
-  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+  const [selectedArtwork, setSelectedArtwork] = useState<any | null>(null); // Use ArtworkResponse or any to match modal prop
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { data: artworks = [], isLoading, isError } = useFeaturedArtworks();
 
@@ -25,8 +25,12 @@ const Work: React.FC<WorkProps> = ({ visibleElements = new Set() }) => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const handleArtworkClick = (artwork: Artwork) => {
-    setSelectedArtwork(artwork);
+  useEffect(() => {
+    console.log('Artworks received in Work component:', artworks);
+  }, [artworks]);
+
+  const handleArtworkClick = (artwork: any) => {
+    setSelectedArtwork(artwork); // artwork is ArtworkResponse
   };
 
   const handleCloseModal = () => {
@@ -118,10 +122,10 @@ const Work: React.FC<WorkProps> = ({ visibleElements = new Set() }) => {
               
               <div className="relative">
                 <ArtworkCard
-                  artwork={artwork}
+                  artwork={artworkResponse}
                   isVisible={true}
                   delay={index * 150}
-                  onClick={() => handleArtworkClick(artwork)}
+                  onClick={() => handleArtworkClick(artworkResponse)}
                 />
               </div>
 
@@ -273,7 +277,7 @@ const Work: React.FC<WorkProps> = ({ visibleElements = new Set() }) => {
       {/* Artwork Modal */}
       {selectedArtwork && (
         <ArtworkModal 
-          artwork={selectedArtwork} 
+          artwork={selectedArtwork} // selectedArtwork is now ArtworkResponse
           onClose={handleCloseModal}
         />
       )}

@@ -44,7 +44,7 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, isVisible, delay, on
             alt={imageAlt}
             width={500}
             height={500}
-            className="w-full h-full object-cover filter grayscale-[10%] group-hover:grayscale-0 transition-all duration-700"
+            className="w-full h-full object-cover transition-all duration-700"
             loading="lazy"
             onLoad={() => console.log(`Image loaded successfully for ${artwork.title}`)}
             onError={(e) => {
