@@ -73,7 +73,7 @@ const Footer = () => {
     { 
       icon: MapPin, 
       label: 'Location', 
-      value: '320 Devon Road, Luton, United Kingdom'
+      value: 'Luton, United Kingdom'
     }
   ];
 
