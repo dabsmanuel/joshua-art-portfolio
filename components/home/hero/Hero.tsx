@@ -241,8 +241,8 @@ const Hero = () => {
             : 'opacity-100 transform translate-y-0 scale-100'
         }`}>
           {/* Accent Text - Enhanced with About styling */}
-          <div className="mb-6 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-800/50 to-gray-700/50 backdrop-blur-lg rounded-full text-amber-400 text-sm font-light tracking-wider mt-10 border border-gray-600/30">
+          <div className="m opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
+            <div className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-gray-800/50 to-gray-700/50 backdrop-blur-lg rounded-full text-amber-400 text-sm font-light tracking-wider mt-10 border border-gray-600/30">
               <Feather className="w-4 h-4 mr-2" />
               {slides[currentSlide].accent}
             </div>
@@ -250,9 +250,9 @@ const Hero = () => {
 
           {/* Main Title - Enhanced with About styling */}
           <div className="mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-blue-200 mb-2 font-serif tracking-wider">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-blue-200 mb-2 font-serif tracking-wider">
               <span className="block leading-none">{slides[currentSlide].title}</span>
-              <span className="block text-5xl md:text-6xl lg:text-7xl font-light italic text-gray-300 leading-none mt-2">
+              <span className="block text-4xl md:text-5xl lg:text-6xl font-light italic text-gray-300 leading-none mt-2">
                 {slides[currentSlide].subtitle}
               </span>
             </h1>
@@ -267,7 +267,7 @@ const Hero = () => {
           
           {/* Description - Enhanced styling */}
           <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '1.1s', animationFillMode: 'forwards' }}>
-            <div className="bg-gradient-to-br from-amber-900/20 to-blue-900/20 p-6 rounded-2xl border border-amber-400/20 backdrop-blur-sm max-w-3xl mx-auto">
+            <div className="bg-gradient-to-br from-amber-900/20 to-blue-900/20 p-3 rounded-2xl border border-amber-400/20 backdrop-blur-sm max-w-3xl mx-auto">
               <Quote className="w-8 h-8 text-amber-400/60 mb-4 mx-auto" />
               <p className="text-xl md:text-2xl text-gray-200 font-light leading-relaxed italic">
                 {slides[currentSlide].description}

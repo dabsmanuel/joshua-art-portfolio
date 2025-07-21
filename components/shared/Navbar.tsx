@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
         </div>
 
         <nav className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-2">
             {/* Logo with hover effect */}
             <div className="relative group cursor-pointer">
               <Feather className="absolute -top-2 -left-2 w-5 h-5 text-amber-400 animate-pulse" />
