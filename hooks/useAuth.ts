@@ -103,7 +103,6 @@ export const useCurrentUser = () => {
       if (error?.response?.status === 401) {
         return false;
       }
-      // Only retry up to 2 times for other errors
       return failureCount < 2;
     },
     gcTime: 0
