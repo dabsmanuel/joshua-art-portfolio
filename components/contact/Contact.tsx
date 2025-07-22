@@ -45,7 +45,7 @@ const ContactPage: React.FC = () => {
     {
       icon: <MapPin className="w-5 h-5" />,
       label: 'Studio Location',
-      value: '320 Devon Road, Luton, United Kingdom',
+      value: 'Luton, United Kingdom',
     },
     {
       icon: <Clock className="w-5 h-5" />,
