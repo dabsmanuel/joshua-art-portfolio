@@ -17,9 +17,9 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: authService.register,
     onSuccess: (data) => {
-      // Invalidate and refetch auth-related queries
-      queryClient.invalidateQueries({ queryKey: authQueryKeys.currentUser });
-      queryClient.invalidateQueries({ queryKey: authQueryKeys.isAuthenticated });
+      // Set authentication data in cache
+      queryClient.setQueryData(authQueryKeys.currentUser, { user: data.user });
+      queryClient.setQueryData(authQueryKeys.isAuthenticated, true);
       
       toast.success('Registration successful!');
     },
@@ -80,37 +80,36 @@ export const useLogout = () => {
 
 // Custom hook for getting current user
 export const useCurrentUser = () => {
+  const queryClient = useQueryClient();
+  
   const queryResult = useQuery({
     queryKey: authQueryKeys.currentUser,
-    queryFn: authService.getCurrentUser,
-    enabled: authService.isAuthenticated(), // Only run if authenticated
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: (failureCount, error) => {
-      // Don't retry on 401 errors
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        (error as any).response?.status === 401
-      ) {
+    queryFn: async () => {
+      try {
+        return await authService.getCurrentUser();
+      } catch (error: any) {
+        // If unauthorized, clear auth state and throw
+        if (error?.response?.status === 401) {
+          queryClient.setQueryData(authQueryKeys.isAuthenticated, false);
+          queryClient.setQueryData(authQueryKeys.currentUser, null);
+          authService.clearTokens(); // Clear invalid tokens
+        }
+        throw error;
+      }
+    },
+    enabled: authService.hasTokens(),
+    staleTime: 5 * 60 * 1000, 
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401) {
         return false;
       }
-      return true;
+      // Only retry up to 2 times for other errors
+      return failureCount < 2;
     },
+    gcTime: 0
   });
 
-  if (
-    queryResult.error &&
-    !(
-      typeof queryResult.error === 'object' &&
-      queryResult.error !== null &&
-      'response' in queryResult.error &&
-      (queryResult.error as any).response?.status === 401
-    )
-  ) {
-    const errorMessage = handleApiError(queryResult.error);
-    toast.error(errorMessage);
-  }
+  queryResult.error && queryResult.error?.response?.status !== 401 && toast.error(handleApiError(queryResult.error));
 
   return queryResult;
 };
@@ -137,13 +136,15 @@ export const useUpdateProfile = () => {
   });
 };
 
-// Custom hook for authentication status
+// Custom hook for authentication status - simplified
 export const useAuthStatus = () => {
-  return useQuery({
-    queryKey: authQueryKeys.isAuthenticated,
-    queryFn: () => authService.isAuthenticated(),
-    staleTime: Infinity, // Never stale
-  });
+  const { data: currentUser, isLoading, error } = useCurrentUser();
+  
+  return {
+    data: !!currentUser && !error,
+    isLoading,
+    error
+  };
 };
 
 // Custom hook for token refresh
@@ -153,16 +154,21 @@ export const useRefreshToken = () => {
   return useMutation({
     mutationFn: (refreshToken: string) => authService.refreshToken(refreshToken),
     onSuccess: () => {
-      // Invalidate all queries to refetch with new token
-      queryClient.invalidateQueries();
+      // Invalidate current user query to refetch with new token
+      queryClient.invalidateQueries({ queryKey: authQueryKeys.currentUser });
     },
-    onError: (error) => {
-      const errorMessage = handleApiError(error);
-      toast.error(errorMessage);
-      
+
+    onError: (error: any) => {
       // Clear auth state on refresh failure
       queryClient.setQueryData(authQueryKeys.isAuthenticated, false);
       queryClient.setQueryData(authQueryKeys.currentUser, null);
+      authService.clearTokens();
+      
+      // Don't show toast for 401 errors as they're expected when tokens are invalid
+      if (error?.response?.status !== 401) {
+        const errorMessage = handleApiError(error);
+        toast.error(errorMessage);
+      }
     },
   });
 };
@@ -176,20 +182,23 @@ export const useAuth = () => {
   const registerMutation = useRegister();
   const updateProfileMutation = useUpdateProfile();
 
+  // Determine if we're actually authenticated
+  const actuallyAuthenticated = !!currentUser && !userError && authService.hasTokens();
+
   return {
     // User data
-    user: currentUser?.user || null,
-    isAuthenticated: isAuthenticated || false,
+    user: currentUser || null,
+    isAuthenticated: actuallyAuthenticated,
     
     // Loading states
-    isLoading: userLoading || authLoading,
+    isLoading: userLoading && authService.hasTokens(), // Only show loading if we have tokens
     isLoginLoading: loginMutation.isPending,
     isLogoutLoading: logoutMutation.isPending,
     isRegisterLoading: registerMutation.isPending,
     isUpdateProfileLoading: updateProfileMutation.isPending,
     
     // Error states
-    userError,
+    userError: userError && 'response' in userError && (userError as any).response?.status !== 401 ? userError : null, // Don't expose 401 errors
     loginError: loginMutation.error,
     logoutError: logoutMutation.error,
     registerError: registerMutation.error,

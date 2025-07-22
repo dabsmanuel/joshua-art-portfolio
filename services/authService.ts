@@ -9,10 +9,26 @@ const api = axios.create({
   },
 });
 
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+let failedQueue: { resolve: (value: unknown) => void; reject: (reason?: any) => void; }[] = [];
+
+const processQueue = (error: unknown, token = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = authService.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -30,25 +46,56 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = authService.getRefreshToken();
+      
+      if (!refreshToken) {
+        // No refresh token available, clear everything and redirect
+        authService.clearTokens();
+        processQueue(error, null);
+        isRefreshing = false;
+        return Promise.reject(error);
+      }
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-          const response = await authService.refreshToken(refreshToken);
-          const { accessToken } = response;
-          
-          localStorage.setItem('accessToken', accessToken);
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          
-          return api(originalRequest);
-        }
+        const response = await api.post('/auth/refresh', { refreshToken });
+        const { accessToken } = response.data;
+        
+        localStorage.setItem('accessToken', accessToken);
+        
+        // Process any queued requests with the new token
+        processQueue(null, accessToken);
+        
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
+        
       } catch (refreshError) {
-        // Refresh failed, redirect to login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        // Refresh failed, clear everything
+        processQueue(refreshError, null);
+        authService.clearTokens();
+        
+        // Only redirect if we're in a browser environment
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
@@ -59,6 +106,12 @@ api.interceptors.response.use(
 export const authService = {
   register: async (userData: RegisterUserData): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/auth/register', userData);
+    const { accessToken, refreshToken } = response.data;
+    
+    // Store tokens in localStorage
+    if (accessToken) localStorage.setItem('accessToken', accessToken);
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+    
     return response.data;
   },
 
@@ -67,14 +120,20 @@ export const authService = {
     const { accessToken, refreshToken, user } = response.data;
     
     // Store tokens in localStorage
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    if (accessToken) localStorage.setItem('accessToken', accessToken);
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
     
     return response.data;
   },
 
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/auth/refresh', { refreshToken });
+    const { accessToken } = response.data;
+    
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken);
+    }
+    
     return response.data;
   },
 
@@ -82,12 +141,13 @@ export const authService = {
     const refreshToken = localStorage.getItem('refreshToken');
     
     try {
-      await api.post('/auth/logout', { refreshToken });
+      if (refreshToken) {
+        await api.post('/auth/logout', { refreshToken });
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      authService.clearTokens();
     }
   },
 
@@ -101,21 +161,34 @@ export const authService = {
     return response.data;
   },
 
-  isAuthenticated: () => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('accessToken');
+  // Check if tokens exist (not if they're valid)
+  hasTokens: () => {
+    if (typeof window === 'undefined') return false;
+    const accessToken = localStorage.getItem('accessToken');
     const refreshToken = localStorage.getItem('refreshToken');
-    return !!(token && refreshToken);
-  }
-  return false; // Return false if not in browser environment
-},
+    return !!(accessToken && refreshToken);
+  },
+
+  // Legacy method - kept for compatibility but now just checks token existence
+  isAuthenticated: () => {
+    return authService.hasTokens();
+  },
 
   getAccessToken: () => {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('accessToken');
   },
 
   getRefreshToken: () => {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('refreshToken');
+  },
+
+  clearTokens: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
   }
 };
 
