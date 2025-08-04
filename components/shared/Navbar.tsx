@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
   }, []);
 
   // Hide header on admin routes - moved after all hooks
-  if (pathname?.startsWith('/admin')) {
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/invoice')) {
     return null;
   }
 
