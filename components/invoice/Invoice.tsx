@@ -640,7 +640,7 @@ const JocArtsInvoice: React.FC = () => {
         ) : (
           <div className="text-center py-12 text-gray-500">
             <p className="text-lg mb-4">No items added yet</p>
-            <p>Click "Add New Item" to get started</p>
+            <p>Click &quot;Add New Item&quot; to get started</p>
           </div>
         )}
 
