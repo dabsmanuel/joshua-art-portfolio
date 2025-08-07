@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
       </button>
 
       {/* Full Screen Menu Overlay */}
-      <div className={`fixed inset-0 z-40 bg-white transition-all duration-500 font-display ${
+      <div className={`fixed inset-0 z-40 bg-white transition-all duration-500 artist-body ${
         isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
       }`}>
         <div className="flex flex-col items-center justify-center min-h-screen py-20">

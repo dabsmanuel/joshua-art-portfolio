@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Crimson_Text } from "next/font/google";
+import { Inter, Crimson_Text, Poppins } from "next/font/google";
 import "./globals.css";
 import Providers from "@/providers/QueryCLient";
 import Header from "@/components/shared/Navbar";
@@ -21,6 +21,13 @@ const crimsonText = Crimson_Text({
   display: "swap",
 });
 
+const poppinsText = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Joshua Otuonye",
   description: "My name is Joshua Otuonye, I am an African visual artist based in the United Kingdom. My artistic vision is to convey my unique perspectives and experiences through my creations.",
@@ -34,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${crimsonText.variable} antialiased font-sans`}
+        className={`${inter.variable} ${crimsonText.variable} ${poppinsText.variable} antialiased font-sans`}
       >
         <Providers>
           <Header isScrolled={true} />
