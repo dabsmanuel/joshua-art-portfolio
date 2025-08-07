@@ -34,7 +34,6 @@ const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [scrollY, setScrollY] = useState(0);
 
-  // Auto-slide functionality
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -42,7 +41,6 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Parallax scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
@@ -63,7 +61,7 @@ const Hero = () => {
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat bg-fixed "
         style={{
           backgroundImage: `url('/images/art2.jpeg')`,
-          // transform: `translateY(${scrollY * 0.8}px)`,
+          transform: `translateY(${scrollY * 0.8}px)`,
           height: '130%', // Make it taller for parallax effect
           top: '-10%',
           backgroundPosition: 'center center',
