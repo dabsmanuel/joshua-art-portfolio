@@ -14,9 +14,9 @@ interface AboutProps {
 }
 
 const achievements = [
-  { icon: Palette, number: "500+", label: "Portraits Created" },
-  { icon: Clock, number: "8+", label: "Years Experience" },
-  { icon: Users, number: "200+", label: "Happy Clients" },
+  { icon: Palette, number: "50+", label: "Portraits Created" },
+  { icon: Clock, number: "10+", label: "Years Experience" },
+  { icon: Users, number: "50+", label: "Happy Clients" },
   { icon: Heart, number: "∞", label: "Passion Projects" }
 ];
 
