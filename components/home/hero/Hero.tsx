@@ -58,7 +58,7 @@ const Hero = () => {
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Parallax Background Image */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat bg-fixed "
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-700 ease-in-out"
         style={{
           backgroundImage: `url('/images/art2.jpeg')`,
           transform: `translateY(${scrollY * 0.8}px)`,
