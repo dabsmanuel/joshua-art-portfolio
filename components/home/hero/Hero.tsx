@@ -52,7 +52,6 @@ const Hero = () => {
     window.addEventListener('resize', checkMobile);
     
     const handleScroll = () => {
-      // Only apply parallax on desktop to avoid mobile issues
       if (!isMobile) {
         setScrollY(window.scrollY);
       }
@@ -75,7 +74,7 @@ const Hero = () => {
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('/images/art2.jpeg')`,
+          backgroundImage: `url('/images/art6.jpeg')`,
           backgroundAttachment: isMobile ? 'scroll' : 'fixed',
           transform: isMobile ? 'none' : `translateY(${scrollY * 0.5}px)`,
           height: isMobile ? '100%' : '120%',
@@ -85,9 +84,7 @@ const Hero = () => {
           willChange: isMobile ? 'auto' : 'transform',
         }}
       />
-      
-      {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/5"></div>
+      <div className="absolute inset-0 bg-black/20"></div>
       
       {/* Subtle animated background pattern - disabled on mobile for performance */}
       {!isMobile && (
