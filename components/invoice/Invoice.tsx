@@ -32,7 +32,6 @@ const JocArtsInvoice: React.FC = () => {
   const [fromInfo, setFromInfo] = useState({
     company: 'Joc Arts Studio',
     address1: '',
-    address2: '',
     city: '',
     email: '',
     phone: ''
@@ -41,7 +40,6 @@ const JocArtsInvoice: React.FC = () => {
   const [billToInfo, setBillToInfo] = useState({
     name: '',
     address1: '',
-    address2: '',
     city: '',
     email: '',
     phone: ''
@@ -191,7 +189,6 @@ const JocArtsInvoice: React.FC = () => {
               <h3>From:</h3>
               <div>${fromInfo.company}</div>
               ${fromInfo.address1 ? `<div>${fromInfo.address1}</div>` : ''}
-              ${fromInfo.address2 ? `<div>${fromInfo.address2}</div>` : ''}
               ${fromInfo.city ? `<div>${fromInfo.city}</div>` : ''}
               ${fromInfo.email ? `<div>Email: ${fromInfo.email}</div>` : ''}
               ${fromInfo.phone ? `<div>Phone: ${fromInfo.phone}</div>` : ''}
@@ -200,7 +197,6 @@ const JocArtsInvoice: React.FC = () => {
               <h3>Bill To:</h3>
               ${billToInfo.name ? `<div>${billToInfo.name}</div>` : ''}
               ${billToInfo.address1 ? `<div>${billToInfo.address1}</div>` : ''}
-              ${billToInfo.address2 ? `<div>${billToInfo.address2}</div>` : ''}
               ${billToInfo.city ? `<div>${billToInfo.city}</div>` : ''}
               ${billToInfo.email ? `<div>${billToInfo.email}</div>` : ''}
               ${billToInfo.phone ? `<div>${billToInfo.phone}</div>` : ''}
@@ -391,13 +387,6 @@ const JocArtsInvoice: React.FC = () => {
             />
             <input
               type="text"
-              value={fromInfo.address2}
-              onChange={(e) => setFromInfo({...fromInfo, address2: e.target.value})}
-              className="bg-gray-50 border border-dashed border-gray-400 px-2 py-1 rounded mb-1 w-full"
-              placeholder="Address Line 2"
-            />
-            <input
-              type="text"
               value={fromInfo.city}
               onChange={(e) => setFromInfo({...fromInfo, city: e.target.value})}
               className="bg-gray-50 border border-dashed border-gray-400 px-2 py-1 rounded mb-1 w-full"
@@ -432,14 +421,7 @@ const JocArtsInvoice: React.FC = () => {
               value={billToInfo.address1}
               onChange={(e) => setBillToInfo({...billToInfo, address1: e.target.value})}
               className="bg-gray-50 border border-dashed border-gray-400 px-2 py-1 rounded mb-1 w-full"
-              placeholder="Address Line 1"
-            />
-            <input
-              type="text"
-              value={billToInfo.address2}
-              onChange={(e) => setBillToInfo({...billToInfo, address2: e.target.value})}
-              className="bg-gray-50 border border-dashed border-gray-400 px-2 py-1 rounded mb-1 w-full"
-              placeholder="Address Line 2"
+              placeholder="Address"
             />
             <input
               type="text"

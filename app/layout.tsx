@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Crimson_Text } from "next/font/google";
 import "./globals.css";
 import Providers from "@/providers/QueryCLient";
 import Header from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer/Footer";
 import { Toaster } from "react-hot-toast";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Modern, clean sans-serif for UI elements and body text
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Elegant serif for headings and artistic content
+const crimsonText = Crimson_Text({
+  variable: "--font-crimson",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -29,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${crimsonText.variable} antialiased font-sans`}
       >
         <Providers>
           <Header isScrolled={true} />

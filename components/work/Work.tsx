@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, Ruler, Palette, Eye, ArrowLeft, ArrowRight, Grid, List, Feather, ChevronDown } from 'lucide-react';
+import { X, Calendar, Ruler, Palette, Eye, ArrowLeft, ArrowRight, Grid, List, ChevronDown } from 'lucide-react';
 import { useArtworks } from '../../hooks/useArtwork';
 import { useCreateInquiry } from '@/hooks/useInquiry';
 import { toast } from 'react-hot-toast';
@@ -53,8 +53,6 @@ const WorkPage: React.FC = () => {
   const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
   const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>([]);
   const [isInquiryFormOpen, setIsInquiryFormOpen] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [showImageZoom, setShowImageZoom] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -131,22 +129,16 @@ const WorkPage: React.FC = () => {
     const elementsToObserve = document.querySelectorAll('[data-animate]');
     elementsToObserve.forEach((el) => observer.observe(el));
 
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [filteredArtworks]);
@@ -202,16 +194,19 @@ const WorkPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black flex items-center justify-center">
-        <p className="text-gray-300 font-light text-lg">Loading artworks...</p>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading artworks...</p>
+        </div>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black flex items-center justify-center">
-        <p className="text-red-500 font-light text-lg">
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-red-500 text-lg">
           Error loading artworks: {error?.message || 'Please try again later.'}
         </p>
       </div>
@@ -219,72 +214,41 @@ const WorkPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black text-white relative overflow-hidden">
-      {/* Artistic Background Elements */}
-      <div className="fixed inset-0 opacity-10 pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 border border-gray-600 rounded-full animate-pulse"></div>
-        <div className="absolute bottom-32 right-20 w-96 h-96 border border-gray-700 rounded-full animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-48 h-48 border border-gray-500 rounded-full animate-pulse delay-500"></div>
-      </div>
-
-      {/* Floating Artistic Elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div
-          className="absolute w-2 h-2 bg-amber-400 rounded-full opacity-70 transition-all duration-1000 ease-out"
-          style={{ left: mousePosition.x * 0.1 + 100, top: mousePosition.y * 0.1 + 50 }}
-        ></div>
-        <div
-          className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-50 transition-all duration-1500 ease-out"
-          style={{ left: mousePosition.x * 0.05 + 200, top: mousePosition.y * 0.05 + 100 }}
-        ></div>
-        <div
-          className="absolute w-3 h-3 bg-purple-400 rounded-full opacity-40 transition-all duration-2000 ease-out"
-          style={{ left: mousePosition.x * 0.08 + 300, top: mousePosition.y * 0.08 + 150 }}
-        ></div>
-      </div>
-
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Hero Section */}
-      <section id="hero" className="py-20 lg:py-32 relative z-10 bg-gradient-to-b from-black/80 to-transparent backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
-          <div className="relative">
-            <Feather className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4 w-8 h-8 text-amber-400 animate-bounce" />
-            <h1
-              id="hero-title"
-              data-animate
-              className={`text-5xl md:text-7xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-blue-200 mb-6 font-serif tracking-wider transition-all duration-1000 ${
-                visibleElements.has('hero-title') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-              }`}
-            >
-              Portfolio
-              <span className="block text-6xl md:text-8xl font-extralight -mt-3 tracking-wider">
-                Gallery
-              </span>
-            </h1>
-            <div className="w-32 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mb-8"></div>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto font-light italic leading-relaxed">
-              A curated collection of graphite and charcoal artworks, capturing the essence of human emotion, nature, and everyday moments.
-            </p>
-          </div>
+      <section className="py-20 lg:py-32 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 text-center">
+          <h1
+            id="hero-title"
+            data-animate
+            className={`text-5xl md:text-7xl font-thin text-gray-900 tracking-widest mb-8 transition-all duration-700 font-display ${
+              visibleElements.has('hero-title') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
+          >
+            Portfolio
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-light">
+            A collection of graphite and charcoal artworks capturing human emotion, nature, and everyday moments.
+          </p>
         </div>
       </section>
 
       {/* Filters and Controls */}
-      <div className="bg-gradient-to-r from-gray-800/80 via-gray-700/80 to-gray-800/80 backdrop-blur-lg sticky top-0 z-40 border-b border-gray-600/50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6">
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center space-x-3 px-6 py-3 rounded-xl font-light transition-all duration-300 bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg hover:bg-amber-700"
+                className="flex items-center space-x-3 px-4 py-2 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors bg-white"
               >
-                <Palette className="w-5 h-5 text-white" />
-                <span>
+                <span className="text-gray-700">
                   {categories.find((cat) => cat.id === selectedCategory)?.name || 'Select Category'} ({categories.find((cat) => cat.id === selectedCategory)?.count || 0})
                 </span>
-                <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-gray-800/95 backdrop-blur-lg rounded-xl shadow-xl border border-gray-600/30 z-50 overflow-hidden">
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
                   {categories.map((category) => (
                     <button
                       key={category.id}
@@ -292,8 +256,8 @@ const WorkPage: React.FC = () => {
                         setSelectedCategory(category.id);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-4 py-3 text-left text-gray-300 hover:bg-gray-700/50 hover:text-white transition-all duration-200 ${
-                        selectedCategory === category.id ? 'bg-gray-700/50 text-white' : ''
+                      className={`w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
+                        selectedCategory === category.id ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
                       }`}
                     >
                       <span>{category.name}</span>
@@ -304,29 +268,29 @@ const WorkPage: React.FC = () => {
               )}
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 border border-gray-200 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-3 rounded-xl transition-all duration-300 ${
+                  className={`p-2 rounded transition-colors ${
                     viewMode === 'grid'
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-600/50 border border-gray-600/30'
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  <Grid className="w-5 h-5" />
+                  <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-3 rounded-xl transition-all duration-300 ${
+                  className={`p-2 rounded transition-colors ${
                     viewMode === 'list'
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-gray-600/50 border border-gray-600/30'
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  <List className="w-5 h-5" />
+                  <List className="w-4 h-4" />
                 </button>
               </div>
-              <div className="text-sm text-gray-300 font-light">
+              <div className="text-sm text-gray-500">
                 {filteredArtworks.length} {filteredArtworks.length === 1 ? 'piece' : 'pieces'}
               </div>
             </div>
@@ -335,9 +299,9 @@ const WorkPage: React.FC = () => {
       </div>
 
       {/* Artwork Grid/List */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 relative z-10">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12">
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredArtworks.map((artwork, index) => {
               const imageUrl = getPrimaryImage(artwork);
               const imageAlt = getImageAlt(artwork);
@@ -347,81 +311,72 @@ const WorkPage: React.FC = () => {
                   key={artwork.id}
                   id={`artwork-${artwork.id}`}
                   data-animate
-                  className={`group cursor-pointer transition-all duration-1000 ${
+                  className={`group cursor-pointer transition-all duration-700 ${
                     visibleElements.has(`artwork-${artwork.id}`)
                       ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-12'
+                      : 'opacity-0 translate-y-8'
                   }`}
-                  style={{ transitionDelay: `${index * 150}ms` }}
+                  style={{ transitionDelay: `${index * 100}ms` }}
                   onClick={() => openModal(artwork)}
                 >
-                  <div className="relative bg-gradient-to-br from-gray-800/40 to-gray-700/40 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-600/30 group-hover:shadow-xl transition-all duration-300">
-                    <div className="absolute -inset-2 bg-gradient-to-r from-amber-600/20 to-blue-６00/20 rounded-3xl blur-lg group-hover:blur-xl transition-all duration-500"></div>
-                    <div className="relative p-4">
-                      <div className="relative aspect-auto bg-gray-900 rounded-lg overflow-hidden">
-                        {imageUrl ? (
-                          <Image
-                            src={imageUrl}
-                            alt={imageAlt}
-                            height={500}
-                            width={500}
-                            className="w-full h-full object-cover transition-all duration-700"
-                            loading="lazy"
-                            onLoad={() => console.log(`Image loaded successfully for ${artwork.title}`)}
-                            onError={(e) => {
-                              console.error(`Image failed to load for ${artwork.title}: ${imageUrl}`);
-                              const target = e.target as HTMLImageElement;
-                              target.classList.add('hidden');
-                            }}
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-gray-300 font-light text-lg">
-                            {artwork.title}
-                          </div>
-                        )}
-                        {artwork.featured && (
-                          <div className="absolute top-4 left-4 bg-amber-400 text-amber-900 px-3 py-1 rounded-full text-xs font-light">
-                            Featured
-                          </div>
-                        )}
-                        {artwork.sold && (
-                          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-light">
-                            Sold
-                          </div>
-                        )}
-                        <div className="absolute inset-0 transition-all duration-300 flex items-center justify-center">
-                          <Eye className="w-8 h-8 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </div>
-                      </div>
-                      <div className="p-6">
-                        <h3 className="text-xl font-light text-white mb-2 font-serif tracking-wide group-hover:text-amber-400 transition-colors duration-300">
+                  <div className="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                    <div className="relative aspect-square bg-gray-50">
+                      {imageUrl ? (
+                        <Image
+                          src={imageUrl}
+                          alt={imageAlt}
+                          height={400}
+                          width={400}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                          onError={(e) => {
+                            console.error(`Image failed to load for ${artwork.title}: ${imageUrl}`);
+                            const target = e.target as HTMLImageElement;
+                            target.classList.add('hidden');
+                          }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-display  ">
                           {artwork.title}
-                        </h3>
-                        <div className="flex items-center text-sm text-gray-300 font-light space-x-4 mb-3">
-                          <span className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1 text-amber-400" />
-                            {artwork.year}
-                          </span>
-                          <span className="flex items-center">
-                            <Ruler className="w-4 h-4 mr-1 text-amber-400" />
-                            {artwork.dimensions}
-                          </span>
                         </div>
-                        <p className="text-gray-300 font-light italic mb-3">{artwork.medium}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-wrap gap-1">
-                            {artwork.tags.slice(0, 2).map((tag, tagIndex) => (
-                              <span
-                                key={`${tag}-${tagIndex}`}
-                                className="px-2 py-1 bg-gray-700/50 text-gray-300 text-xs rounded-full font-light group-hover:bg-amber-500/50 group-hover:text-white transition-all duration-300"
-                              >
-                                {tag.replace(/[\[\]"]/g, '')}
-                              </span>
-                            ))}
-                          </div>
-                          <div className="text-lg font-light text-gray-300 group-hover:text-amber-400 transition-colors duration-300">
-                            {artwork.price ? `£${artwork.price}` : 'Price on Request'}
-                          </div>
+                      )}
+                      {artwork.featured && (
+                        <div className="absolute top-3 left-3 bg-black text-white px-2 py-1 text-xs rounded">
+                          Featured
+                        </div>
+                      )}
+                      {artwork.sold && (
+                        <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 text-xs rounded">
+                          Sold
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <Eye className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2 group-hover:text-gray-700 transition-colors">
+                        {artwork.title}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-500 space-x-4 mb-3">
+                        <span>{artwork.year}</span>
+                        <span>•</span>
+                        <span>{artwork.dimensions}</span>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-4">{artwork.medium}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap gap-1">
+                          {artwork.tags.slice(0, 2).map((tag, tagIndex) => (
+                            <span
+                              key={`${tag}-${tagIndex}`}
+                              className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
+                            >
+                              {tag.replace(/[\[\]"]/g, '')}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {artwork.price ? `£${artwork.price}` : 'Inquire'}
                         </div>
                       </div>
                     </div>
@@ -431,7 +386,7 @@ const WorkPage: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {filteredArtworks.map((artwork, index) => {
               const imageUrl = getPrimaryImage(artwork);
               const imageAlt = getImageAlt(artwork);
@@ -441,26 +396,25 @@ const WorkPage: React.FC = () => {
                   key={artwork.id}
                   id={`artwork-list-${artwork.id}`}
                   data-animate
-                  className={`group cursor-pointer transition-all duration-1000 ${
+                  className={`group cursor-pointer transition-all duration-700 ${
                     visibleElements.has(`artwork-list-${artwork.id}`)
                       ? 'opacity-100 translate-x-0'
-                      : 'opacity-0 -translate-x-12'
+                      : 'opacity-0 -translate-x-8'
                   }`}
-                  style={{ transitionDelay: `${index * 150}ms` }}
+                  style={{ transitionDelay: `${index * 100}ms` }}
                   onClick={() => openModal(artwork)}
                 >
-                  <div className="relative bg-gradient-to-br from-gray-800/40 to-gray-700/40 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-600/30 group-hover:shadow-xl transition-all duration-300">
-                    <div className="absolute -inset-2 bg-gradient-to-r from-amber-600/20 to-blue-600/20 rounded-3xl blur-lg group-hover:blur-xl transition-all duration-500"></div>
-                    <div className="relative flex flex-col md:flex-row gap-6 p-6">
+                  <div className="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col md:flex-row">
                       <div className="md:w-1/3">
-                        <div className="relative bg-gray-900 rounded-lg overflow-hidden">
+                        <div className="relative aspect-square bg-gray-50">
                           {imageUrl ? (
                             <Image
                               src={imageUrl}
                               alt={imageAlt}
-                              width={500}
-                              height={500}
-                              className="w-full h-full object-cover transition-all duration-700"
+                              width={400}
+                              height={400}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               loading="lazy"
                               onError={(e) => {
                                 console.error(`List view image failed to load for ${artwork.title}: ${imageUrl}`);
@@ -469,47 +423,47 @@ const WorkPage: React.FC = () => {
                               }}
                             />
                           ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-light">
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                               {artwork.title}
                             </div>
                           )}
                           {artwork.featured && (
-                            <div className="absolute top-3 left-3 bg-amber-400 text-amber-900 px-2 py-1 rounded-full text-xs font-light">
+                            <div className="absolute top-3 left-3 bg-black text-white px-2 py-1 text-xs rounded">
                               Featured
                             </div>
                           )}
                           {artwork.sold && (
-                            <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-light">
+                            <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 text-xs rounded">
                               Sold
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="md:w-2/3 flex flex-col justify-between">
+                      <div className="md:w-2/3 p-8 flex flex-col justify-between">
                         <div>
-                          <h3 className="text-2xl font-light text-white mb-3 font-serif tracking-wide group-hover:text-amber-400 transition-colors duration-300">
+                          <h3 className="text-2xl font-medium text-gray-900 mb-4 group-hover:text-gray-700 transition-colors">
                             {artwork.title}
                           </h3>
-                          <div className="flex items-center text-sm text-gray-300 font-light space-x-6 mb-4">
+                          <div className="flex items-center text-sm text-gray-500 space-x-6 mb-4">
                             <span className="flex items-center">
-                              <Calendar className="w-4 h-4 mr-2 text-amber-400" />
+                              <Calendar className="w-4 h-4 mr-2" />
                               {artwork.year}
                             </span>
                             <span className="flex items-center">
-                              <Ruler className="w-4 h-4 mr-2 text-amber-400" />
+                              <Ruler className="w-4 h-4 mr-2" />
                               {artwork.dimensions}
                             </span>
                             <span className="flex items-center">
-                              <Palette className="w-4 h-4 mr-2 text-amber-400" />
+                              <Palette className="w-4 h-4 mr-2" />
                               {artwork.medium}
                             </span>
                           </div>
-                          <p className="text-gray-300 font-light leading-relaxed mb-4">{artwork.description}</p>
-                          <div className="flex flex-wrap gap-2 mb-4">
+                          <p className="text-gray-600 leading-relaxed mb-6">{artwork.description}</p>
+                          <div className="flex flex-wrap gap-2 mb-6">
                             {artwork.tags.map((tag, tagIndex) => (
                               <span
                                 key={`${tag}-${tagIndex}`}
-                                className="px-3 py-1 bg-gray-700/50 text-gray-300 text-sm rounded-full font-light group-hover:bg-amber-500/50 group-hover:text-white transition-all duration-300"
+                                className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded"
                               >
                                 {tag.replace(/[\[\]"]/g, '')}
                               </span>
@@ -517,11 +471,11 @@ const WorkPage: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="text-lg font-light text-gray-300 group-hover:text-amber-400 transition-colors duration-300">
+                          <div className="text-lg font-medium text-gray-900">
                             {artwork.price ? `£${artwork.price}` : 'Price on Request'}
                           </div>
-                          <button className="flex items-center text-gray-300 hover:text-amber-400 transition-colors font-light">
-                            <Eye className="w-5 h-5 mr-2" />
+                          <button className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                            <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </button>
                         </div>
@@ -543,17 +497,6 @@ const WorkPage: React.FC = () => {
         onNext={() => navigateModal('next')}
         onPrev={() => navigateModal('prev')}
       />
-
-      {/* Footer */}
-      <div className="relative z-10 mt-32 mb-12">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-gray-800/50 to-gray-700/50 backdrop-blur-sm px-8 py-4 rounded-full border border-gray-600/30">
-            <Feather className="w-6 h-6 text-amber-400" />
-            <span className="text-gray-300 font-light tracking-wider">Crafted with passion in Luton</span>
-            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
@@ -626,31 +569,29 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onClose, o
   const imageAlt = getImageAlt(artwork);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative bg-gradient-to-br from-gray-800/80 to-gray-700/80 backdrop-blur-xl rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-600/30">
-        <div className="absolute -inset-2 bg-gradient-to-r from-amber-600/20 to-blue-600/20 rounded-3xl blur-lg"></div>
-        <div className="relative p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="p-8">
           {!isInquiryFormOpen ? (
             <>
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-3xl font-light text-white font-serif tracking-wide group-hover:text-amber-400 transition-colors duration-300">
+                <h2 className="text-3xl font-medium text-gray-900">
                   {artwork.title}
                 </h2>
-                <button onClick={onClose} className="p-2 hover:bg-gray-600/50 rounded-full transition-colors">
-                  <X className="w-6 h-6 text-gray-300 hover:text-amber-400" />
+                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <X className="w-6 h-6 text-gray-500" />
                 </button>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="relative">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-amber-600/20 to-blue-600/20 rounded-2xl blur-lg"></div>
-                  <div className="relative bg-gray-900 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 rounded-lg overflow-hidden">
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
                         alt={imageAlt}
-                        width={500}
-                        height={500}
-                        className="w-full h-full object-cover transition-all duration-700"
+                        width={600}
+                        height={600}
+                        className="w-full h-full object-cover"
                         loading="lazy"
                         onError={(e) => {
                           console.error(`Modal image failed to load for ${artwork.title}: ${imageUrl}`);
@@ -659,99 +600,102 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onClose, o
                         }}
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-gray-300 font-light text-xl">
+                      <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xl">
                         {artwork.title}
                       </div>
                     )}
                     {artwork.featured && (
-                      <div className="absolute top-4 left-4 bg-amber-400 text-amber-900 px-3 py-1 rounded-full text-xs font-light">
+                      <div className="absolute top-4 left-4 bg-black text-white px-3 py-1 text-sm rounded">
                         Featured
                       </div>
                     )}
                     {artwork.sold && (
-                      <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-light">
+                      <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 text-sm rounded">
                         Sold
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-8">
+                  <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <span className="text-gray-300 font-light">Year:</span>
-                      <p className="font-light text-white">{artwork.year}</p>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Year</h4>
+                      <p className="text-gray-900">{artwork.year}</p>
                     </div>
                     <div>
-                      <span className="text-gray-300 font-light">Dimensions:</span>
-                      <p className="font-light text-white">{artwork.dimensions}</p>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Dimensions</h4>
+                      <p className="text-gray-900">{artwork.dimensions}</p>
                     </div>
                     <div>
-                      <span className="text-gray-300 font-light">Medium:</span>
-                      <p className="font-light text-white">{artwork.medium}</p>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Medium</h4>
+                      <p className="text-gray-900">{artwork.medium}</p>
                     </div>
                     <div>
-                      <span className="text-gray-300 font-light">Price:</span>
-                      <p className="font-light text-lg text-white">{artwork.price ? `£${artwork.price}` : 'Price on Request'}</p>
+                      <h4 className="text-sm font-medium text-gray-500 mb-2">Price</h4>
+                      <p className="text-gray-900 font-medium">{artwork.price ? `£${artwork.price}` : 'Price on Request'}</p>
                     </div>
                   </div>
+                  
                   <div>
-                    <h3 className="text-lg font-light text-white mb-2 font-serif tracking-wide">Description</h3>
-                    <p className="text-gray-300 font-light leading-relaxed">{artwork.description}</p>
+                    <h4 className="text-sm font-medium text-gray-500 mb-3">Description</h4>
+                    <p className="text-gray-700 leading-relaxed">{artwork.description}</p>
                   </div>
+                  
                   <div>
-                    <h3 className="text-lg font-light text-white mb-2 font-serif tracking-wide">Tags</h3>
+                    <h4 className="text-sm font-medium text-gray-500 mb-3">Tags</h4>
                     <div className="flex flex-wrap gap-2">
                       {artwork.tags.map((tag, tagIndex) => (
                         <span
                           key={`${tag}-${tagIndex}`}
-                          className="px-3 py-1 bg-gray-700/50 text-gray-300 text-sm rounded-full font-light hover:bg-amber-500/50 hover:text-white transition-all duration-300"
+                          className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded"
                         >
                           {tag.replace(/[\[\]"]/g, '')}
                         </span>
                       ))}
                     </div>
                   </div>
+                  
                   {!artwork.sold && (
                     <button
                       onClick={() => setIsInquiryFormOpen(true)}
-                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-3 rounded-lg hover:bg-amber-700 transition-all duration-300 shadow-sm hover:shadow-md font-light"
+                      className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors"
                     >
                       Inquire About This Piece
                     </button>
                   )}
                 </div>
               </div>
-              <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-600/30">
+              <div className="flex justify-between items-center mt-12 pt-8 border-t border-gray-100">
                 <button
                   onClick={onPrev}
-                  className="flex items-center px-4 py-2 text-gray-300 hover:text-amber-400 transition-colors font-light"
+                  className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous
                 </button>
                 <button
                   onClick={onNext}
-                  className="flex items-center px-4 py-2 text-gray-300 hover:text-amber-400 transition-colors font-light"
+                  className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Next
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </button>
               </div>
             </>
           ) : (
             <div className="space-y-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-light text-white font-serif tracking-wide">Inquire About {artwork.title}</h2>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-medium text-gray-900">Inquire About {artwork.title}</h2>
                 <button
                   onClick={() => setIsInquiryFormOpen(false)}
-                  className="p-2 hover:bg-gray-600/50 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <X className="w-6 h-6 text-gray-300 hover:text-amber-400" />
+                  <X className="w-6 h-6 text-gray-500" />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-light text-gray-300 mb-1">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                     Name
                   </label>
                   <input
@@ -761,12 +705,12 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onClose, o
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-white bg-gray-800/50"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     placeholder="Your full name"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-light text-gray-300 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                     Email
                   </label>
                   <input
@@ -776,12 +720,12 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onClose, o
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-white bg-gray-800/50"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     placeholder="Your email address"
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-light text-gray-300 mb-1">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                     Message
                   </label>
                   <textarea
@@ -790,31 +734,39 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onClose, o
                     value={formData.message}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-white bg-gray-800/50"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     rows={4}
                     placeholder="Your inquiry details"
                   ></textarea>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-300 font-light">
-                    Inquiring about: <span className="font-light text-white">{artwork.title}</span>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    Inquiring about: <span className="font-medium text-gray-900">{artwork.title}</span>
                     {artwork.price && ` (£${artwork.price})`}
                   </p>
                 </div>
-                {isError && <p className="text-red-500 text-sm">{error?.message || 'Failed to submit inquiry'}</p>}
-                {isSubmitting && <p className="text-gray-300 text-sm">Submitting...</p>}
-                <div className="flex justify-end space-x-4">
+                {isError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="text-red-600 text-sm">{error?.message || 'Failed to submit inquiry'}</p>
+                  </div>
+                )}
+                {isSubmitting && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-blue-600 text-sm">Submitting your inquiry...</p>
+                  </div>
+                )}
+                <div className="flex justify-end space-x-4 pt-6">
                   <button
                     type="button"
                     onClick={() => setIsInquiryFormOpen(false)}
-                    className="px-4 py-2 text-gray-300 hover:text-amber-400 border border-gray-600/30 rounded-lg transition-colors font-light"
+                    className="px-6 py-3 text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-light ${
+                    className={`px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors ${
                       isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >

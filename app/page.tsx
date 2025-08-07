@@ -14,7 +14,6 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Hero />
-      <Work visibleElements={visibleElements} />
       <About visibleElements={visibleElements} />
       <AnimationStyles />
     </div>
