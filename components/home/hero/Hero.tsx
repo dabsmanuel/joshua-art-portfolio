@@ -74,7 +74,7 @@ const Hero = () => {
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('/images/art6.jpeg')`,
+          backgroundImage: `url('/images/art3.jpeg')`,
           backgroundAttachment: isMobile ? 'scroll' : 'fixed',
           transform: isMobile ? 'none' : `translateY(${scrollY * 0.5}px)`,
           height: isMobile ? '100%' : '120%',
