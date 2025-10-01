@@ -32,7 +32,6 @@ const slides = [
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [scrollY, setScrollY] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -51,15 +50,7 @@ const Hero = () => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
-    const handleScroll = () => {
-      if (!isMobile) {
-        setScrollY(window.scrollY);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', checkMobile);
     };
   }, [isMobile]);
@@ -70,23 +61,16 @@ const Hero = () => {
 
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Background Image with conditional parallax */}
+      {/* Background Image */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 w-full h-full bg-contain bg-center bg-no-repeat"
         style={{
           backgroundImage: `url('/images/art3.jpeg')`,
-          backgroundAttachment: isMobile ? 'scroll' : 'fixed',
-          transform: isMobile ? 'none' : `translateY(${scrollY * 0.5}px)`,
-          height: isMobile ? '100%' : '120%',
-          top: isMobile ? '0' : '-10%',
-          backgroundPosition: 'center center',
           filter: 'brightness(0.6) contrast(1.2)',
-          willChange: isMobile ? 'auto' : 'transform',
         }}
       />
       <div className="absolute inset-0 bg-black/20"></div>
       
-      {/* Subtle animated background pattern - disabled on mobile for performance */}
       {!isMobile && (
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 border border-gray-900 rounded-full animate-pulse"></div>
