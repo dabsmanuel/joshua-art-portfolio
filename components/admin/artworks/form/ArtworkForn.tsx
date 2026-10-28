@@ -110,26 +110,26 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
       data.append('keepExistingImages', keepExistingImages.toString());
     }
 
+    // The API reads new files from "images" when creating and "newImages" when editing
     const imageInput = document.querySelector<HTMLInputElement>('#images');
     if (imageInput?.files) {
       Array.from(imageInput.files).forEach(file => {
-        data.append('images', file);
+        data.append(mode === 'edit' ? 'newImages' : 'images', file);
       });
     }
 
-    console.log('FormData entries:', Array.from(data.entries()));
     onSubmit(data);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-charcoal/70 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
               {mode === 'edit' ? 'Edit Artwork' : 'Create New Artwork'}
             </h2>
-            <button onClick={onCancel} className="text-gray-500 hover:text-gray-700">
+            <button type="button" onClick={onCancel} className="text-gray-500 hover:text-gray-700" aria-label="Close">
               <X size={24} />
             </button>
           </div>
@@ -211,7 +211,7 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
                 value={formData.dimensions}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray- introverted-transparent"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
               />
             </div>
 
@@ -288,9 +288,11 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
                 id="images"
                 name="images"
                 multiple
-                accept="image/*"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                required={mode === 'create'}
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
               />
+              <p className="mt-1 text-xs text-gray-500">JPG, PNG, GIF or WebP, up to 10MB each, 10 images at most.</p>
             </div>
 
             <div>
@@ -350,7 +352,7 @@ export const ArtworkForm: React.FC<ArtworkFormProps> = ({
                         value={formData.printSizes[size].price}
                         onChange={(e) => handlePrintSizeChange(size, 'price', e.target.value)}
                         disabled={!formData.printSizes[size].selected}
-                        className="mt-1 w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:bg-gray- introverted"
+                        className="mt-1 w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent disabled:bg-gray-100"
                       />
                     </div>
                   ))}

@@ -3,27 +3,26 @@ export interface ErrorResponse {
   data?: {
     message?: string;
     error?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   headers?: {
     [key: string]: string;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ApiError extends Error {
   code?: string;
   message: string;
   response?: ErrorResponse;
-  request?: any;
-  config?: any;
-  [key: string]: any;
+  request?: unknown;
+  config?: unknown;
 }
 
 export interface BackendErrorData {
   message?: string;
   error?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface BackendErrorResponse {
@@ -32,16 +31,15 @@ export interface BackendErrorResponse {
   headers?: {
     [key: string]: string;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface TypedApiError extends Error {
   code?: string;
   message: string;
   response?: BackendErrorResponse;
-  request?: any;
-  config?: any;
-  [key: string]: any;
+  request?: unknown;
+  config?: unknown;
 }
 
 export interface HandleApiErrorOptions {
@@ -67,7 +65,7 @@ export interface GetRetryDelayError {
     headers?: {
       [key: string]: string;
     };
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }

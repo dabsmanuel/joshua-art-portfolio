@@ -16,10 +16,7 @@ interface ArtworkListProps {
   isUpdating?: boolean;
 }
 
-export const ArtworkList: React.FC<ArtworkListProps> = ({
-  isCreating = false,
-  isUpdating = false,
-}) => {
+export const ArtworkList: React.FC<ArtworkListProps> = () => {
   const [filters, setFilters] = useState({
     page: 1,
     limit: 12,
@@ -46,21 +43,13 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
     createArtwork, 
     updateArtwork, 
     deleteArtwork, 
-    isDeleting 
+    isDeleting,
+    isCreating,
+    isUpdating,
   } = useArtworkManager();
 
-  React.useEffect(() => {
-    console.log('Artworks Data:', artworksData);
-    if (artworksData?.artworks) {
-      console.log('Artworks Array:', artworksData.artworks);
-    }
-    console.log('Editing Artwork:', editingArtwork);
-  }, [artworksData, editingArtwork]);
-
   const handleEdit = (artwork: ArtworkResponse) => {
-  console.log('Setting editingArtwork:', artwork);
-  if (!artwork.id) { // Changed from artwork.id to artwork._id
-    console.error('Artwork has no ID:', artwork);
+  if (!artwork.id) {
     alert('Error: Cannot edit artwork. Missing ID.');
     return;
   }
@@ -88,26 +77,26 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
     setViewingArtwork(null);
   };
 
-  const handleFormSubmit = (formData: FormData) => {
-    if (editingArtwork) {
-      if (!editingArtwork.id) { // Change from editingArtwork.id to editingArtwork._id
-        console.error('Editing artwork ID is undefined:', editingArtwork);
-        alert('Error: Cannot update artwork. Invalid artwork ID.');
-        return;
-      }
-      console.log('Updating artwork with ID:', editingArtwork.id);
-      updateArtwork({ id: editingArtwork.id, artworkData: formData }); // Change to _id
-    } else {
-      console.log('Creating new artwork');
-      createArtwork(formData);
-    }
+  // Keep the form open until the save succeeds, so a failed upload doesn't lose what was typed
+  const closeForm = () => {
     setShowForm(false);
     setEditingArtwork(null);
   };
 
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setEditingArtwork(null);
+  const handleFormSubmit = (formData: FormData) => {
+    if (editingArtwork) {
+      if (!editingArtwork.id) {
+        alert('Error: Cannot update artwork. Invalid artwork ID.');
+        return;
+      }
+      updateArtwork({ id: editingArtwork.id, artworkData: formData }, { onSuccess: closeForm });
+    } else {
+      createArtwork(formData, { onSuccess: closeForm });
+    }
+  };
+
+  const updateFilters = (changes: Partial<typeof filters>) => {
+    setFilters(prev => ({ ...prev, ...changes, page: 1 }));
   };
 
   const handlePageChange = (newPage: number) => {
@@ -122,18 +111,18 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Error loading artworks: {error.message}</p>
+        <p className="text-dot">Error loading artworks: {error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Artwork Management</h1>
+        <h2 className="text-2xl font-semibold text-gray-900">Artwork</h2>
         <div className="flex gap-4">
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => { setEditingArtwork(null); setShowForm(true); }}
             className="bg-gray-800 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center gap-2"
             disabled={isCreating}
           >
@@ -182,7 +171,7 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
                 </label>
                 <select
                   value={filters.category}
-                  onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={(e) => updateFilters({ category: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
                 >
                   <option value="">All Categories</option>
@@ -199,10 +188,9 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
                 </label>
                 <select
                   value={filters.featured?.toString() || ''}
-                  onChange={(e) => setFilters(prev => ({ 
-                    ...prev, 
+                  onChange={(e) => updateFilters({
                     featured: e.target.value === '' ? undefined : e.target.value === 'true'
-                  }))}
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
                 >
                   <option value="">All</option>
@@ -217,10 +205,9 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
                 </label>
                 <select
                   value={filters.sold?.toString() || ''}
-                  onChange={(e) => setFilters(prev => ({ 
-                    ...prev, 
+                  onChange={(e) => updateFilters({
                     sold: e.target.value === '' ? undefined : e.target.value === 'true'
-                  }))}
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
                 >
                   <option value="">All</option>
@@ -235,7 +222,7 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
                 </label>
                 <select
                   value={filters.limit}
-                  onChange={(e) => setFilters(prev => ({ ...prev, limit: parseInt(e.target.value) }))}
+                  onChange={(e) => updateFilters({ limit: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-800 focus:border-transparent"
                 >
                   <option value="12">12</option>
@@ -327,7 +314,7 @@ export const ArtworkList: React.FC<ArtworkListProps> = ({
         <ArtworkForm
           artwork={editingArtwork || undefined}
           onSubmit={handleFormSubmit}
-          onCancel={handleFormCancel}
+          onCancel={closeForm}
           isLoading={isCreating || isUpdating}
           mode={editingArtwork ? 'edit' : 'create'}
         />

@@ -1,5 +1,5 @@
   export interface Artwork {
-  images: any;
+  images: { url: string; alt?: string }[];
   id: number;
   title: string;
   medium: string;

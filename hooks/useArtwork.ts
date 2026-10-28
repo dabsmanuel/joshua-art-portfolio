@@ -4,6 +4,7 @@ import { handleApiError } from '../utils/errorHandler';
 import { toast } from 'react-hot-toast';
 import { ArtworkResponse, ArtworkFilters } from '../types/artwork';
 import type { ArtworkImageData } from '../types/artwork';
+import type { TypedApiError } from '../types/error';
 
 // Query keys for cache management
 export const artworkQueryKeys = {
@@ -35,7 +36,7 @@ export const useCreateArtwork = () => {
       toast.success('Artwork created successfully!');
     },
     onError: (error: unknown) => {
-      const errorMessage = handleApiError(error as any);
+      const errorMessage = handleApiError(error as TypedApiError);
       toast.error(errorMessage);
     },
   });
@@ -68,8 +69,6 @@ export const useUpdateArtwork = () => {
 
   return useMutation({
     mutationFn: ({ id, artworkData }: { id: string; artworkData: FormData }) => {
-      console.log('Updating artwork with ID:', id);
-      console.log('FormData entries:', Array.from(artworkData.entries()));
       return artworkService.updateArtwork(id, artworkData);
     },
     onSuccess: (data: ArtworkResponse, variables: { id: string; artworkData: FormData }) => {
@@ -80,7 +79,7 @@ export const useUpdateArtwork = () => {
     },
     onError: (error: unknown) => {
       console.error('Update artwork error:', error);
-      const errorMessage = handleApiError(error as any);
+      const errorMessage = handleApiError(error as TypedApiError);
       toast.error(errorMessage);
     },
   });
@@ -103,7 +102,7 @@ export const useDeleteArtwork = () => {
       toast.success('Artwork deleted successfully!');
     },
     onError: (error: unknown) => {
-      const errorMessage = handleApiError(error as any);
+      const errorMessage = handleApiError(error as TypedApiError);
       toast.error(errorMessage);
     },
   });
@@ -162,10 +161,15 @@ export const useAddImagesToArtwork = () => {
         count: data.artwork.images?.length ?? 0,
       });
       
+
+      // The lists (admin + public site) show these images too
+      queryClient.invalidateQueries({ queryKey: artworkQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: artworkQueryKeys.featured() });
+
       toast.success(`${data.addedImages.length} image(s) added successfully!`);
     },
     onError: (error: unknown) => {
-      const errorMessage = handleApiError(error as any);
+      const errorMessage = handleApiError(error as TypedApiError);
       toast.error(errorMessage);
     },
   });
@@ -191,10 +195,15 @@ export const useRemoveImageFromArtwork = () => {
         count: data.artwork.images?.length ?? 0,
       });
       
+
+      // The lists (admin + public site) show these images too
+      queryClient.invalidateQueries({ queryKey: artworkQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: artworkQueryKeys.featured() });
+
       toast.success('Image removed successfully!');
     },
     onError: (error: unknown) => {
-      const errorMessage = handleApiError(error as any);
+      const errorMessage = handleApiError(error as TypedApiError);
       toast.error(errorMessage);
     },
   });
@@ -219,10 +228,15 @@ export const useSetPrimaryImage = () => {
         count: data.artwork.images?.length ?? 0,
       });
       
+
+      // The lists (admin + public site) show these images too
+      queryClient.invalidateQueries({ queryKey: artworkQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: artworkQueryKeys.featured() });
+
       toast.success('Primary image updated successfully!');
     },
     onError: (error: unknown) => {
-      const errorMessage = handleApiError(error as any);
+      const errorMessage = handleApiError(error as TypedApiError);
       toast.error(errorMessage);
     },
   });
@@ -234,7 +248,7 @@ export const useArtworkImages = (artworkId: string) => {
     queryKey: artworkQueryKeys.images(artworkId),
     queryFn: () => artworkService.getArtworkImages(artworkId),
     enabled: !!artworkId,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 0,
     retry: 2,
   });
 };

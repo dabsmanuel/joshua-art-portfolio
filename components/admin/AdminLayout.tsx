@@ -1,22 +1,23 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
+import { useInquiryStats } from '../../hooks/useInquiry';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Menu,
   X,
   Home,
-  Users,
-  Settings,
-
-  Shield,
+  Palette,
+  Landmark,
+  MessageSquare,
+  Inbox,
   LogOut,
   User,
   Bell,
-  Search,
   ChevronDown,
-  Activity,
+  ExternalLink,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -29,13 +30,23 @@ interface MenuItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   href: string;
-  pattern?: string; // For matching active routes with dynamic segments
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle = "Dashboard" }) => {
+const menuItems: MenuItem[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/admin/dashboard' },
+  { id: 'artworks', label: 'Artwork', icon: Palette, href: '/admin/artworks' },
+  { id: 'exhibitions', label: 'Exhibitions', icon: Landmark, href: '/admin/exhibitions' },
+  { id: 'inquiries', label: 'Artwork inquiries', icon: MessageSquare, href: '/admin/inquiries' },
+  { id: 'contact', label: 'Contact requests', icon: Inbox, href: '/admin/contact' },
+  { id: 'profile', label: 'Profile', icon: User, href: '/admin/profile' },
+];
+
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, isAuthenticated, logout, isLogoutLoading, isLoading } = useAuth();
+  const { data: inquiryStats } = useInquiryStats();
+  const pendingInquiries = inquiryStats?.stats?.byStatus?.pending ?? 0;
   const router = useRouter();
   const pathname = usePathname();
 
@@ -46,55 +57,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle = "Dashbo
     }
   }, [isAuthenticated, isLoading, router]);
 
-  const menuItems: MenuItem[] = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: Home,
-      href: '/admin/dashboard',
-      pattern: '/admin/dashboard',
-    },
-    {
-      id: 'artworks',
-      label: 'Artwork',
-      icon: Users,
-      href: '/admin/artworks',
-      pattern: '/admin/artworks',
-    },
-    
-    {
-      id: 'profile',
-      label: 'Profile',
-      icon: User,
-      href: '/admin/profile',
-      pattern: '/admin/profile',
-    },
+  const isMenuItemActive = (item: MenuItem): boolean =>
+    pathname === item.href || pathname.startsWith(item.href + '/');
 
-    {
-      id: 'contact',
-      label: 'Contact Requests',
-      icon: Activity,
-      href: '/admin/contact',
-      pattern: '/admin/contact',
-    },
-
-    {
-      id: 'inquiries',
-      label: 'Inquiries',
-      icon: Activity,
-      href: '/admin/inquiries',
-      pattern: '/admin/inquiries',
-    },
-  ];
-
-  // Function to check if a menu item is active
-  const isMenuItemActive = (item: MenuItem): boolean => {
-    if (item.pattern) {
-      // For exact matches or patterns
-      return pathname === item.pattern || pathname.startsWith(item.pattern + '/');
-    }
-    return pathname === item.href;
-  };
+  // The title follows the page unless a page asks for its own
+  const title = pageTitle ?? menuItems.find(isMenuItemActive)?.label ?? 'Admin';
 
   const handleLogout = async () => {
     try {
@@ -105,18 +72,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle = "Dashbo
     }
   };
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const toggleUserMenu = () => {
-    setUserMenuOpen(!userMenuOpen);
-  };
-
   const handleNavigation = (href: string) => {
     router.push(href);
-    // Close mobile sidebar after navigation
     setSidebarOpen(false);
+    setUserMenuOpen(false);
   };
 
   // Close user menu when clicking outside
@@ -128,167 +87,188 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle = "Dashbo
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [userMenuOpen]);
 
-  // Show loading if still checking authentication
+  // Lock page scroll while the mobile sidebar is open
+  useEffect(() => {
+    document.body.style.overflow = sidebarOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-800 roundedgels-full animate-spin"></div>
-          <span className="text-gray-600">Loading...</span>
+      <div className="flex min-h-screen items-center justify-center bg-wall" role="status">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-7 w-7 animate-spin rounded-full border border-ink border-t-transparent" />
+          <p className="label">Loading…</p>
         </div>
       </div>
     );
   }
 
-  // Don't render if not authenticated
+  // The effect above redirects to the login page
   if (!isAuthenticated) {
     return null;
   }
 
+  const displayName = user?.name || user?.email || 'Admin';
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="flex min-h-screen bg-wall text-ink">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 shadow-xl transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:flex lg:flex-col`}>
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between h-16 px-6 bg-gray-900 border-b border-gray-700">
-          <div className="flex items-center space-x-2">
-            <Shield className="w-8 h-8 text-white" />
-            <span className="text-xl font-bold text-white">Admin Portal</span>
-          </div>
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 transform flex-col bg-charcoal text-mat transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        aria-label="Admin navigation"
+      >
+        <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
+          <Link href="/admin/dashboard" className="block leading-tight">
+            <span className="block font-display text-lg font-semibold">Joshua Otuonye</span>
+            <span className="label !text-mat/50">Studio admin</span>
+          </Link>
           <button
-            onClick={toggleSidebar} className="lg-reviewed text-gray-grey- grey-300 hover:text-white hover:bg-gray-700 p-1 rounded"
+            onClick={() => setSidebarOpen(false)}
+            className="p-1 text-mat/70 hover:text-mat lg:hidden"
+            aria-label="Close menu"
           >
-            <X className="w-6 h-6" />
+            <X className="h-6 w-6" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 mt mt-8 px-4">
-          <div className="space-y-2">
+        <nav className="flex-1 overflow-y-auto px-3 py-6">
+          <ul className="space-y-1">
             {menuItems.map((item) => {
               const isActive = isMenuItemActive(item);
               return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavigation(item.href)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors text-left ${
-                    isActive
-                      ? 'bg-gray-700 text-white border-r-2 border-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                  }`}
-                >
-                  <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
-                  <span>{item.label}</span>
-                </button>
+                <li key={item.id}>
+                  <button
+                    onClick={() => handleNavigation(item.href)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`flex w-full items-center gap-3 border-l-2 px-4 py-3 text-left text-sm transition-colors ${
+                      isActive
+                        ? 'border-mat bg-white/[0.06] text-mat'
+                        : 'border-transparent text-mat/65 hover:bg-white/[0.04] hover:text-mat'
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    <span className="flex-1">{item.label}</span>
+                    {item.id === 'inquiries' && pendingInquiries > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-dot px-1.5 text-xs text-white">
+                        {pendingInquiries}
+                      </span>
+                    )}
+                  </button>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-gray-700">
-          <div className="flex items-center space there-x-3 p-2">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-gray-800" />
+        <div className="border-t border-white/10 p-4">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-4 flex items-center gap-2 px-2 text-sm text-mat/65 hover:text-mat"
+          >
+            <ExternalLink className="h-4 w-4" />
+            View public site
+          </a>
+          <div className="flex items-center gap-3 px-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-mat text-ink">
+              <User className="h-4 w-4" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {user?.name || user?.email || 'Admin'}
-              </p>
-              <p className="text-xs text-gray-400">Administrator</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{displayName}</p>
+              <p className="label !text-mat/50">Administrator</p>
             </div>
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-          onClick={toggleSidebar}
-        ></div>
+          className="fixed inset-0 z-40 bg-charcoal/70 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden
+        />
       )}
 
-      {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col lg:ml-64">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 shrink-0">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center space-x-4">
+      {/* Main */}
+      <div className="flex min-w-0 flex-1 flex-col lg:ml-64">
+        <header className="sticky top-0 z-30 shrink-0 border-b border-rule bg-wall/90 backdrop-blur-md">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
+            <div className="flex items-center gap-3">
               <button
-                onClick={toggleSidebar}
-                className="lg:hidden text-gray-500 hover:text-gray-700 p-2 rounded-md hover:bg-gray-100"
+                onClick={() => setSidebarOpen(true)}
+                className="-ml-2 p-2 text-lead hover:text-ink lg:hidden"
+                aria-label="Open menu"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="h-6 w-6" />
               </button>
-              <h1 className="text-2xl font-semibold text-gray-800">{pageTitle}</h1>
+              <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>
             </div>
 
-            <div className="flex items-center space-x-4">
-              {/* Search */}
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Notifications */}
-              <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Pending inquiries */}
+              <button
+                onClick={() => handleNavigation('/admin/inquiries')}
+                className="relative p-2 text-lead hover:text-ink"
+                aria-label={pendingInquiries > 0 ? `${pendingInquiries} pending inquiries` : 'No pending inquiries'}
+                title={pendingInquiries > 0 ? `${pendingInquiries} pending inquiries` : 'No pending inquiries'}
+              >
+                <Bell className="h-5 w-5" />
+                {pendingInquiries > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-dot px-1 text-xs text-white">
+                    {pendingInquiries}
+                  </span>
+                )}
               </button>
 
-              {/* User Menu */}
-              <div className="relative user-menu">
+              {/* User menu */}
+              <div className="user-menu relative">
                 <button
-                  onClick={toggleUserMenu}
-                  className="flex items-center space-x-2 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                  onClick={() => setUserMenuOpen((open) => !open)}
+                  className="flex items-center gap-2 p-1.5 text-lead hover:text-ink"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
                 >
-                  <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <ChevronDown className="w-4 h-4" />
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-mat">
+                    <User className="h-4 w-4" />
+                  </span>
+                  <ChevronDown className="h-4 w-4" />
                 </button>
 
-                {/* User Dropdown */}
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                    <div className="px-4 py-2 border-b border-gray-200">
-                      <p className="text-sm font-medium text-gray-800">
-                        {user?.name || 'Admin'}
-                      </p>
-                      <p className="text-xs text-gray-500">{user?.email}</p>
+                  <div
+                    role="menu"
+                    className="absolute right-0 z-50 mt-2 w-56 border border-rule bg-mat py-1 shadow-lg"
+                  >
+                    <div className="border-b border-rule px-4 py-3">
+                      <p className="truncate text-sm font-medium">{displayName}</p>
+                      <p className="truncate text-xs text-lead">{user?.email}</p>
                     </div>
                     <button
+                      role="menuitem"
                       onClick={() => handleNavigation('/admin/profile')}
-                      className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink hover:bg-gray-100"
                     >
-                      <User className="w-4 h-4" />
-                      <span>Profile</span>
+                      <User className="h-4 w-4" />
+                      Profile
                     </button>
                     <button
-                      onClick={() => handleNavigation('/admin/settings')}
-                      className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span>Settings</span>
-                    </button>
-                    <hr className="my-1" />
-                    <button
+                      role="menuitem"
                       onClick={handleLogout}
                       disabled={isLogoutLoading}
-                      className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 text-left"
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-dot hover:bg-dot/10 disabled:opacity-50"
                     >
-                      <LogOut className="w-4 h-4" />
-                      <span>{isLogoutLoading ? 'Signing out...' : 'Sign out'}</span>
+                      <LogOut className="h-4 w-4" />
+                      {isLogoutLoading ? 'Signing out…' : 'Sign out'}
                     </button>
                   </div>
                 )}
@@ -297,10 +277,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle = "Dashbo
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <main className="flex-1 p-6 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

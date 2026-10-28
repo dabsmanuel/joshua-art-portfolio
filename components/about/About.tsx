@@ -1,406 +1,308 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 'use client'
-import React, { useState, useEffect } from 'react';
-import { 
-  Palette, 
-  Award, 
-  BookOpen, 
-  Heart, 
-  Clock, 
-  Users, 
-  Lightbulb,
-  MapPin,
-  Quote,
-  Brush,
-  Eye,
-  Feather
-} from 'lucide-react';
+import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import Reveal from '../shared/Reveal';
+import PageHeader from '../shared/PageHeader';
 
 interface ProcessStep {
   step: number;
   title: string;
   description: string;
-  icon: React.ReactNode;
 }
 
+const processSteps: ProcessStep[] = [
+  {
+    step: 1,
+    title: 'Observation & Study',
+    description: 'I begin by spending time with my subject, studying the interplay of light and shadow.',
+  },
+  {
+    step: 2,
+    title: 'Initial Sketches',
+    description: 'Multiple rough sketches help me explore composition and capture the essence of what draws me to the subject.',
+  },
+  {
+    step: 3,
+    title: 'Detailed Planning',
+    description: 'I create detailed studies focusing on values, proportions, and the emotional core of the piece.',
+  },
+  {
+    step: 4,
+    title: 'Final Execution',
+    description: 'Using traditional graphite and charcoal techniques, I build the drawing layer by layer, focusing on depth and atmosphere.',
+  },
+];
+
+const stats = [
+  { number: '50+', label: 'Artworks created' },
+  { number: '10', label: 'Years of experience' },
+  { number: '50+', label: 'Happy collectors' },
+  { number: '12', label: 'Exhibitions' },
+];
+
+const story = [
+  {
+    title: 'Early beginnings & family influence',
+    content: "My love for drawing began in childhood, inspired by my elder brother who was already exploring sculpting and various art forms. Growing up in an artistic household, I spent hours sketching everything from family pets to the trees outside my window, developing what would become a lifelong passion for capturing life through pencil and charcoal."
+  },
+  {
+    title: 'Academic journey',
+    content: "While pursuing my Bachelor of Agriculture in Animal Science at the University of Port Harcourt, Nigeria, and later my Master's in Environmental Management at the University of Hertfordshire, UK, I continued developing my artistic skills as a self-taught artist. My formal education provided me with discipline and analytical thinking that unexpectedly enhanced my approach to art."
+  },
+  {
+    title: 'Multiple creative outlets',
+    content: "Alongside my visual art, I discovered another passion in music, working as a background vocalist on several Nigerian music productions. While I don't pursue singing professionally, this musical background has deepened my understanding of rhythm, emotion, and creative expression, all of which influence my approach to drawing."
+  },
+  {
+    title: 'Present day',
+    content: "Today, I work from my Luton studio, dividing my time between commissioned portraits and personal projects. Each piece is an exploration of light, shadow, and the infinite complexity of human emotion. As a young revolutionary in Luton, my involvement with the RevoLutonary Cohort has enriched my artistic journey, enhancing my creative abilities and inspiring me to make a positive impact through art that celebrates Luton's rich cultural tapestry."
+  }
+];
+
+const materials = [
+  {
+    title: "Pencils",
+    items: ["Staedtler Mars Lumograph (2H-8B)", "Faber-Castell 9000 series", "Mechanical pencils for detail work"]
+  },
+  {
+    title: "Paper",
+    items: ["Strathmore 400 Series Drawing", "Canson XL Bristol", "Fabriano Artistico for special pieces"]
+  },
+  {
+    title: "Accessories",
+    items: ["Kneaded erasers", "Blending stumps", "White charcoal for highlights"]
+  }
+];
+
+const beliefs = [
+  "Art should evoke emotion and create genuine human connection",
+  "Patient observation reveals beauty in the most ordinary subjects",
+  "The slow, meditative process of drawing is as important as the final result",
+  "Traditional techniques carry wisdom that remains relevant today"
+];
+
+const tabs = [
+  { key: 'story', label: 'Story' },
+  { key: 'process', label: 'Process' },
+  { key: 'philosophy', label: 'Philosophy' }
+] as const;
+
 const AboutPage: React.FC = () => {
-  const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
   const [selectedTab, setSelectedTab] = useState<'story' | 'process' | 'philosophy'>('story');
 
-  const processSteps: ProcessStep[] = [
-    {
-      step: 1,
-      title: 'Observation & Study',
-      description: 'I begin by spending time with my subject, studying the interplay of light and shadow.',
-      icon: <Eye className="w-4 h-4" />
-    },
-    {
-      step: 2,
-      title: 'Initial Sketches',
-      description: 'Multiple rough sketches help me explore composition and capture the essence of what draws me to the subject.',
-      icon: <Brush className="w-4 h-4" />
-    },
-    {
-      step: 3,
-      title: 'Detailed Planning',
-      description: 'I create detailed studies focusing on values, proportions, and the emotional core of the piece.',
-      icon: <Lightbulb className="w-4 h-4" />
-    },
-    {
-      step: 4,
-      title: 'Final Execution',
-      description: 'Using traditional graphite and charcoal techniques, I build the drawing layer by layer, focusing on depth and atmosphere.',
-      icon: <Palette className="w-4 h-4" />
-    }
-  ];
-
-  const stats = [
-    { number: '50+', label: 'Artworks Created', icon: <Palette className="w-4 h-4" /> },
-    { number: '10', label: 'Years Experience', icon: <Clock className="w-4 h-4" /> },
-    { number: '50+', label: 'Happy Collectors', icon: <Users className="w-4 h-4" /> },
-    { number: '12', label: 'Exhibitions', icon: <Award className="w-4 h-4" /> }
-  ];
-
-  useEffect(() => {
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setVisibleElements(prev => new Set(prev).add(entry.target.id));
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, {
-      threshold: 0.1,
-      rootMargin: '-20px'
-    });
-
-    const elementsToObserve = document.querySelectorAll('[data-animate]');
-    elementsToObserve.forEach(el => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <div className="min-h-screen bg-white">
-      
-      {/* Hero Section */}
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <Feather className="w-6 h-6 mx-auto mb-8 text-gray-400" />
-          <h1 className="text-5xl md:text-7xl font-thin text-gray-900 tracking-widest mb-8 transition-all duration-700  artist-heading">
-            The Artist
-          </h1>
-          <div className="w-12 h-px bg-gray-300 mx-auto mb-8"></div>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            &quot;Where graphite meets soul, and shadows dance with light—exploring the profound beauty 
-            of human experience through the timeless art of pencil and charcoal.&quot;
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen">
+      <PageHeader
+        eyebrow="About the artist"
+        title="Joshua Otuonye"
+        intro="Where graphite meets soul, and shadows dance with light: exploring the beauty of human experience through pencil and charcoal."
+      />
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        
-        {/* Introduction */}
-        <div
-          id="intro-section"
-          data-animate
-          className={`mb-20 transition-all duration-700 ${
-            visibleElements.has('intro-section')
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4'
-          }`}
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
-            <div className="lg:col-span-2">
-              <div className="aspect-square bg-gray-50 rounded overflow-hidden">
+      {/* Introduction */}
+      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-24">
+        <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-20">
+          <Reveal className="lg:col-span-5">
+            <figure>
+              <div className="hung">
                 <Image
                   src="/images/joshua.jpg"
-                  alt="Joshua - The Artist"
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                  width={400}
-                  height={400}
+                  alt="Joshua, the artist"
+                  className="aspect-[4/5] w-full object-cover"
+                  width={640}
+                  height={800}
                 />
               </div>
-              <div className="flex items-center space-x-2 text-gray-500 text-sm mt-4">
-                <MapPin className="w-4 h-4" />
-                <span>Luton, UK</span>
-              </div>
-            </div>
+              <figcaption className="label mt-4">Joshua Otuonye · Luton, UK</figcaption>
+            </figure>
+          </Reveal>
 
-            <div className="lg:col-span-3 space-y-6">
-              <div>
-                <span className="text-gray-400 font-light tracking-wider text-sm">JOSHUA</span>
-                <h2 className="text-3xl font-light text-gray-800 mt-2">
-                  Capturing life&apos;s quiet poetry through pencil & soul
-                </h2>
-              </div>
-              
-              <p className="text-gray-600 leading-relaxed">
-                For years, I&apos;ve been enchanted by the alchemy of transforming simple graphite into 
-                windows of human emotion. Each stroke is a whispered conversation between artist and subject, 
-                revealing the extraordinary within the ordinary.
-              </p>
+          <Reveal className="lg:col-span-7" delay={100}>
+            <h2 className="text-3xl font-semibold leading-[1.1] sm:text-4xl lg:text-5xl">
+              Capturing life&apos;s quiet poetry through pencil &amp; soul
+            </h2>
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-lead">
+              For years, I&apos;ve been enchanted by the alchemy of transforming simple graphite into
+              windows of human emotion. Each stroke is a whispered conversation between artist and subject,
+              revealing the extraordinary within the ordinary.
+            </p>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-6 pt-6">
-                {stats.map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-2xl font-light text-gray-800">{stat.number}</div>
-                    <div className="text-gray-500 text-sm">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            <dl className="mt-12 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-rule pt-8 sm:grid-cols-4">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex flex-col">
+                  <dd className="font-display text-4xl font-semibold">{stat.number}</dd>
+                  <dt className="label mt-1">{stat.label}</dt>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
         </div>
+      </section>
 
-        {/* Tab Navigation */}
-        <div
-          id="tab-nav"
-          data-animate
-          className={`mb-12 transition-all duration-700 ${
-            visibleElements.has('tab-nav')
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4'
-          }`}
-        >
-          <div className="flex justify-center border-b border-gray-200">
-            {[
-              { key: 'story', label: 'Story', icon: <BookOpen className="w-4 h-4" /> },
-              { key: 'process', label: 'Process', icon: <Brush className="w-4 h-4" /> },
-              { key: 'philosophy', label: 'Philosophy', icon: <Heart className="w-4 h-4" /> }
-            ].map((tab) => (
+      {/* Tabs */}
+      <section className="border-t border-rule">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <div className="flex gap-8 border-b border-rule" role="tablist" aria-label="About sections">
+            {tabs.map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setSelectedTab(tab.key as any)}
-                className={`flex items-center space-x-2 px-6 py-4 transition-all duration-300 ${
+                role="tab"
+                aria-selected={selectedTab === tab.key}
+                onClick={() => setSelectedTab(tab.key)}
+                className={`-mb-px border-b-2 py-5 text-sm transition-colors ${
                   selectedTab === tab.key
-                    ? 'border-b-2 border-gray-800 text-gray-800'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'border-ink text-ink'
+                    : 'border-transparent text-lead hover:text-ink'
                 }`}
               >
-                {tab.icon}
-                <span>{tab.label}</span>
+                {tab.label}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Tab Content */}
-        <div
-          id="tab-content"
-          data-animate
-          className={`transition-all duration-700 ${
-            visibleElements.has('tab-content')
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4'
-          }`}
-        >
-          {selectedTab === 'story' && (
-            <div className="space-y-12">
-              <div className="text-center mb-12">
-                <h3 className="text-3xl font-light text-gray-800 mb-4">The Artist&apos;s Genesis</h3>
-                <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                  From childhood sketches to masterful portraits, every line drawn has been a step 
-                  towards understanding the delicate dance between light and shadow, emotion and form.
-                </p>
+          <div className="py-16 lg:py-24" role="tabpanel">
+            {selectedTab === 'story' && (
+              <div className="animate-fade-in grid gap-12 lg:grid-cols-12 lg:gap-20">
+                <div className="lg:col-span-4">
+                  <h3 className="text-3xl font-semibold sm:text-4xl">The artist&apos;s genesis</h3>
+                  <p className="mt-5 leading-relaxed text-lead">
+                    From childhood sketches to masterful portraits, every line drawn has been a step
+                    towards understanding the delicate dance between light and shadow, emotion and form.
+                  </p>
+                </div>
+
+                <div className="lg:col-span-8">
+                  <div className="divide-y divide-rule border-y border-rule">
+                    {story.map((section) => (
+                      <div key={section.title} className="grid gap-3 py-8 md:grid-cols-3 md:gap-8">
+                        <h4 className="text-lg font-semibold md:col-span-1">{section.title}</h4>
+                        <p className="leading-relaxed text-lead md:col-span-2">{section.content}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <blockquote className="mt-14 border-l-2 border-ink pl-6">
+                    <p className="text-xl leading-relaxed sm:text-2xl">
+                      &quot;Every line I draw is a conversation between myself and the subject. It&apos;s about finding that moment of connection,
+                      that spark of recognition that makes a drawing come alive.&quot;
+                    </p>
+                    <footer className="label mt-4">Artist statement, 2024</footer>
+                  </blockquote>
+                </div>
               </div>
+            )}
 
-              <div className="space-y-10">
-                {[
-                  {
-                    title: "Early Beginnings & Family Influence",
-                    content: "My love for drawing began in childhood, inspired by my elder brother who was already exploring sculpting and various art forms. Growing up in an artistic household, I spent hours sketching everything from family pets to the trees outside my window, developing what would become a lifelong passion for capturing life through pencil and charcoal."
-                  },
-                  {
-                    title: "Academic Journey",
-                    content: "While pursuing my Bachelor of Agriculture in Animal Science at the University of Port Harcourt, Nigeria, and later my Master's in Environmental Management at the University of Hertfordshire, UK, I continued developing my artistic skills as a self-taught artist. My formal education provided me with discipline and analytical thinking that unexpectedly enhanced my approach to art."
-                  },
-                  {
-                    title: "Multiple Creative Outlets",
-                    content: "Alongside my visual art, I discovered another passion in music, working as a background vocalist on several Nigerian music productions. While I don't pursue singing professionally, this musical background has deepened my understanding of rhythm, emotion, and creative expression, all of which influence my approach to drawing."
-                  },
-                  {
-                    title: "Present Day",
-                    content: "Today, I work from my Luton studio, dividing my time between commissioned portraits and personal projects. Each piece is an exploration of light, shadow, and the infinite complexity of human emotion. As a young revolutionary in Luton, my involvement with the RevoLutonary Cohort has enriched my artistic journey, enhancing my creative abilities and inspiring me to make a positive impact through art that celebrates Luton's rich cultural tapestry."
-                  }
-                ].map((section, index) => (
-                  <div key={index} className="border-l-2 border-gray-100 pl-6">
-                    <h4 className="text-xl font-light text-gray-800 mb-3">
-                      {section.title}
-                    </h4>
-                    <p className="text-gray-600 leading-relaxed">
-                      {section.content}
+            {selectedTab === 'process' && (
+              <div className="animate-fade-in space-y-20">
+                <div className="grid gap-12 lg:grid-cols-12 lg:gap-20">
+                  <div className="lg:col-span-4">
+                    <h3 className="text-3xl font-semibold sm:text-4xl">The sacred ritual</h3>
+                    <p className="mt-5 leading-relaxed text-lead">
+                      Each artwork emerges through a meditative dance of observation, intuition, and countless hours
+                      of patient mark-making.
                     </p>
                   </div>
-                ))}
-              </div>
 
-              <div className="bg-gray-50 p-8 rounded">
-                <Quote className="w-6 h-6 text-gray-400 mb-4" />
-                <p className="text-lg italic text-gray-700 mb-4 leading-relaxed">
-                  &quot;Every line I draw is a conversation between myself and the subject. It&apos;s about finding that moment of connection, 
-                  that spark of recognition that makes a drawing come alive.&quot;
-                </p>
-                <div className="text-gray-500 text-sm">— Artist Statement, 2024</div>
-              </div>
-            </div>
-          )}
+                  <ol className="lg:col-span-8">
+                    {processSteps.map((step) => (
+                      <li key={step.step} className="grid grid-cols-[3rem_1fr] gap-4 border-b border-rule py-7 first:border-t md:grid-cols-[4rem_1fr_2fr] md:gap-8">
+                        <span className="label pt-1">Step {step.step}</span>
+                        <h4 className="text-lg font-semibold md:col-start-2">{step.title}</h4>
+                        <p className="col-start-2 leading-relaxed text-lead md:col-start-3">{step.description}</p>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
 
-          {selectedTab === 'process' && (
-            <div className="space-y-12">
-              <div className="text-center mb-12">
-                <h3 className="text-3xl font-light text-gray-800 mb-4">The Sacred Ritual</h3>
-                <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                  Each artwork emerges through a meditative dance of observation, intuition, and countless hours 
-                  of patient mark-making—a ritual as ancient as art itself.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {processSteps.map((step, index) => (
-                  <div key={step.step} className="flex space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-gray-800 text-white rounded-full flex items-center justify-center text-sm">
-                        {step.step}
+                <div>
+                  <h4 className="mb-8 text-2xl font-semibold">The artist&apos;s arsenal</h4>
+                  <div className="grid gap-10 border-t border-rule pt-8 md:grid-cols-3">
+                    {materials.map((category) => (
+                      <div key={category.title}>
+                        <h5 className="label mb-4 !text-ink">{category.title}</h5>
+                        <ul className="space-y-2 text-lead">
+                          {category.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedTab === 'philosophy' && (
+              <div className="animate-fade-in grid gap-12 lg:grid-cols-12 lg:gap-20">
+                <div className="lg:col-span-4">
+                  <h3 className="text-3xl font-semibold sm:text-4xl">The artist&apos;s creed</h3>
+                  <p className="mt-5 leading-relaxed text-lead">
+                    Art is not merely about technique. It is a philosophy of seeing, feeling, and translating
+                    the ineffable essence of human experience into tangible form.
+                  </p>
+                </div>
+
+                <div className="space-y-14 lg:col-span-8">
+                  <div className="grid gap-10 md:grid-cols-2">
+                    <div>
+                      <h4 className="text-xl font-semibold">The power of simplicity</h4>
+                      <p className="mt-4 leading-relaxed text-lead">
+                        In a world filled with digital noise and constant stimulation, I find profound meaning in the simplicity of pencil on paper.
+                        This ancient medium demands patience, contemplation, and genuine connection with the subject.
+                      </p>
+                      <p className="mt-4 leading-relaxed text-lead">
+                        Each mark is intentional, each shadow carefully considered. There&apos;s no undo button, no digital manipulation, just the honest
+                        dialogue between artist, tool, and surface.
+                      </p>
                     </div>
                     <div>
-                      <h4 className="text-lg font-light text-gray-800 mb-2">
-                        {step.title}
-                      </h4>
-                      <p className="text-gray-600 leading-relaxed text-sm">
-                        {step.description}
+                      <h4 className="text-xl font-semibold">Capturing the ephemeral</h4>
+                      <p className="mt-4 leading-relaxed text-lead">
+                        My portraits seek to capture not just physical likeness, but the fleeting expressions and emotions that make us human.
+                        A slight smile, the way light catches in someone&apos;s eyes, the weight of years in weathered hands: these are the moments I strive to preserve.
                       </p>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              <div className="bg-gray-50 rounded p-8">
-                <h4 className="text-2xl font-light text-gray-800 mb-6 text-center">The Artist&apos;s Arsenal</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {[
-                    {
-                      title: "Pencils",
-                      items: ["Staedtler Mars Lumograph (2H-8B)", "Faber-Castell 9000 series", "Mechanical pencils for detail work"]
-                    },
-                    {
-                      title: "Paper",
-                      items: ["Strathmore 400 Series Drawing", "Canson XL Bristol", "Fabriano Artistico for special pieces"]
-                    },
-                    {
-                      title: "Accessories",
-                      items: ["Kneaded erasers", "Blending stumps", "White charcoal for highlights"]
-                    }
-                  ].map((category, index) => (
-                    <div key={index}>
-                      <h5 className="font-light text-lg text-gray-800 mb-4">
-                        {category.title}
-                      </h5>
-                      <ul className="space-y-2">
-                        {category.items.map((item, itemIndex) => (
-                          <li key={itemIndex} className="text-gray-600 text-sm">
-                            • {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedTab === 'philosophy' && (
-            <div className="space-y-12">
-              <div className="text-center mb-12">
-                <h3 className="text-3xl font-light text-gray-800 mb-4">The Artist&apos;s Creed</h3>
-                <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                  Art is not merely about technique—it is a philosophy of seeing, feeling, and translating 
-                  the ineffable essence of human experience into tangible form.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div className="space-y-8">
-                  <div>
-                    <h4 className="text-2xl font-light text-gray-800 mb-4">
-                      The Power of Simplicity
-                    </h4>
-                    <p className="text-gray-600 leading-relaxed mb-4">
-                      In a world filled with digital noise and constant stimulation, I find profound meaning in the simplicity of pencil on paper. 
-                      This ancient medium demands patience, contemplation, and genuine connection with the subject.
-                    </p>
-                    <p className="text-gray-600 leading-relaxed">
-                      Each mark is intentional, each shadow carefully considered. There&apos;s no undo button, no digital manipulation—just the honest 
-                      dialogue between artist, tool, and surface.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="text-2xl font-light text-gray-800 mb-4">
-                      Capturing the Ephemeral
-                    </h4>
-                    <p className="text-gray-600 leading-relaxed">
-                      My portraits seek to capture not just physical likeness, but the fleeting expressions and emotions that make us human. 
-                      A slight smile, the way light catches in someone&apos;s eyes, the weight of years in weathered hands—these are the moments I strive to preserve.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-8">
-                  <div className="bg-gray-50 p-6 rounded">
-                    <h4 className="text-2xl font-light text-gray-800 mb-6">Sacred Principles</h4>
-                    <ul className="space-y-4">
-                      {[
-                        { icon: <Heart className="w-4 h-4 text-red-500" />, text: "Art should evoke emotion and create genuine human connection" },
-                        { icon: <Eye className="w-4 h-4 text-blue-500" />, text: "Patient observation reveals beauty in the most ordinary subjects" },
-                        { icon: <Clock className="w-4 h-4 text-green-500" />, text: "The slow, meditative process of drawing is as important as the final result" },
-                        { icon: <Lightbulb className="w-4 h-4 text-yellow-500" />, text: "Traditional techniques carry wisdom that remains relevant today" }
-                      ].map((belief, index) => (
-                      <li key={index} className="flex items-start space-x-3">
-                        <div className="mt-1">
-                          {belief.icon}
-                        </div>
-                        <span className="text-gray-600 text-sm leading-relaxed">
-                          {belief.text}
-                        </span>
-                      </li>
+                  <div className="border-t border-rule pt-10">
+                    <h4 className="label mb-6 !text-ink">Principles</h4>
+                    <ul className="divide-y divide-rule border-y border-rule">
+                      {beliefs.map((belief) => (
+                        <li key={belief} className="py-4 text-lg">{belief}</li>
                       ))}
                     </ul>
                   </div>
 
                   <div>
-                    <h4 className="text-2xl font-light text-gray-800 mb-4">
-                      Looking Forward
-                    </h4>
-                    <p className="text-gray-600 leading-relaxed">
-                      As I continue to grow as an artist, I&apos;m excited to explore new subjects while deepening my mastery of traditional techniques. 
-                      My goal is to create work that stands the test of time—drawings that will move viewers decades from now, 
+                    <h4 className="text-xl font-semibold">Looking forward</h4>
+                    <p className="mt-4 max-w-2xl leading-relaxed text-lead">
+                      As I continue to grow as an artist, I&apos;m excited to explore new subjects while deepening my mastery of traditional techniques.
+                      My goal is to create work that stands the test of time: drawings that will move viewers decades from now,
                       just as the old masters continue to inspire us today.
                     </p>
                   </div>
+
+                  <blockquote className="border-l-2 border-ink pl-6 text-xl leading-relaxed sm:text-2xl">
+                    &quot;In every stroke lies a heartbeat, in every shadow a story,
+                    in every drawing a piece of the artist&apos;s soul made manifest.&quot;
+                  </blockquote>
                 </div>
               </div>
-
-              <div className="text-center bg-gray-50 p-8 rounded">
-                <Quote className="w-8 h-8 text-gray-400 mx-auto mb-4" />
-                <p className="text-xl font-light text-gray-700 italic leading-relaxed mb-4">
-                  &quot;In every stroke lies a heartbeat, in every shadow a story, 
-                  in every drawing a piece of the artist&apos;s soul made manifest.&quot;
-                </p>
-                <div className="w-12 h-px bg-gray-300 mx-auto"></div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Closing call */}
+      <section className="bg-charcoal py-20 text-mat">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-6 sm:flex-row sm:items-center lg:px-10">
+          <h2 className="max-w-lg text-3xl font-semibold sm:text-4xl">See the drawings these stories became.</h2>
+          <Link href="/work" className="bg-mat px-7 py-3.5 text-sm font-medium text-ink transition-colors hover:bg-white">
+            View the work
+          </Link>
+        </div>
+      </section>
     </div>
   );
 };

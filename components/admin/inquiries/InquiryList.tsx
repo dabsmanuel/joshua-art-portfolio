@@ -31,6 +31,7 @@ const InquiriesManagement: React.FC = () => {
   // API hooks
   const { data: inquiriesData, isLoading, error, isError, refetch } = useGetAllInquiries({
     status: statusFilter === 'all' ? undefined : statusFilter,
+    limit: 500,
     sortBy: sortBy === 'newest' ? 'createdAt' : sortBy,
     sortOrder: sortBy === 'newest' ? 'desc' : 'asc'
   });
@@ -187,9 +188,9 @@ const InquiriesManagement: React.FC = () => {
   // Status badge component
   const StatusBadge = ({ status }: { status: string }) => {
     const statusConfig = {
-      pending: { icon: Clock, color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-      contacted: { icon: CheckCircle, color: 'bg-blue-100 text-blue-800 border-blue-200' },
-      closed: { icon: XCircle, color: 'bg-green-100 text-green-800 border-green-200' }
+      pending: { icon: Clock, color: 'bg-gray-900 text-white border-gray-900' },
+      contacted: { icon: CheckCircle, color: 'bg-transparent text-gray-900 border-gray-900' },
+      closed: { icon: XCircle, color: 'bg-gray-100 text-gray-500 border-gray-200' }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -206,9 +207,9 @@ const InquiriesManagement: React.FC = () => {
   // Priority badge component
   const PriorityBadge = ({ priority }: { priority: string }) => {
     const priorityConfig = {
-      low: { color: 'bg-gray-100 text-gray-800 border-gray-200' },
-      medium: { color: 'bg-orange-100 text-orange-800 border-orange-200' },
-      high: { color: 'bg-red-100 text-red-800 border-red-200' }
+      low: { color: 'bg-transparent text-gray-500 border-gray-200' },
+      medium: { color: 'bg-transparent text-gray-700 border-gray-300' },
+      high: { color: 'bg-dot/10 text-dot border-dot/40' }
     };
 
     const config = priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig.medium;
@@ -222,7 +223,7 @@ const InquiriesManagement: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white p-6">
+      <div className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <div className="animate-pulse">
@@ -241,11 +242,11 @@ const InquiriesManagement: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-white p-6">
+      <div className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <div className="text-center">
-              <div className="text-red-500 text-lg font-medium mb-2">
+              <div className="text-dot text-lg font-medium mb-2">
                 Error Loading Inquiries
               </div>
               <p className="text-gray-600 mb-4">
@@ -265,7 +266,7 @@ const InquiriesManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6" onClick={(e) => {
+    <div className="p-6" onClick={(e) => {
       if (!(e.target as Element).closest('.relative')) {
         setOpenDropdown(null);
       }
@@ -275,7 +276,7 @@ const InquiriesManagement: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Inquiries Management</h1>
+              <h2 className="text-2xl font-semibold text-gray-900">Artwork inquiries</h2>
               <p className="text-gray-600 mt-1">Manage and track all artwork inquiries</p>
             </div>
             
@@ -290,25 +291,25 @@ const InquiriesManagement: React.FC = () => {
           
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-              <div className="text-sm text-blue-600">Total</div>
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <div className="text-sm text-gray-700">Total</div>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">{stats.byStatus.pending}</div>
-              <div className="text-sm text-yellow-600">Pending</div>
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">{stats.byStatus.pending}</div>
+              <div className="text-sm text-gray-700">Pending</div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{stats.byStatus.contacted}</div>
-              <div className="text-sm text-blue-600">Contacted</div>
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">{stats.byStatus.contacted}</div>
+              <div className="text-sm text-gray-700">Contacted</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.byStatus.closed}</div>
-              <div className="text-sm text-green-600">Closed</div>
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">{stats.byStatus.closed}</div>
+              <div className="text-sm text-gray-700">Closed</div>
             </div>
-            <div className="bg-orange-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">{stats.thisMonth}</div>
-              <div className="text-sm text-orange-600">This Month</div>
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">{stats.thisMonth}</div>
+              <div className="text-sm text-gray-700">This Month</div>
             </div>
           </div>
         </div>
@@ -371,7 +372,7 @@ const InquiriesManagement: React.FC = () => {
             <button
               onClick={handleExport}
               disabled={exportMutation.isPending}
-              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               <Download size={20} />
               {exportMutation.isPending ? 'Exporting...' : 'Export CSV'}
@@ -381,21 +382,21 @@ const InquiriesManagement: React.FC = () => {
 
         {/* Bulk Actions */}
         {showBulkActions && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-4">
             <div className="flex items-center justify-between">
-              <span className="text-blue-800">
+              <span className="text-gray-700">
                 {selectedInquiries.size} inquiries selected
               </span>
               <div className="flex gap-2">
                 <button 
                   onClick={() => handleBulkAction('update-status', 'contacted')}
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                  className="bg-gray-900 text-white px-3 py-1 rounded text-sm hover:bg-gray-800"
                 >
                   Mark as Contacted
                 </button>
                 <button 
                   onClick={() => handleBulkAction('update-status', 'closed')}
-                  className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                  className="bg-gray-900 text-white px-3 py-1 rounded text-sm hover:bg-gray-800"
                 >
                   Mark as Closed
                 </button>
@@ -407,7 +408,7 @@ const InquiriesManagement: React.FC = () => {
                 </button>
                 <button 
                   onClick={() => handleBulkAction('delete')}
-                  className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                  className="bg-dot text-white px-3 py-1 rounded text-sm hover:bg-dot/90"
                 >
                   Delete
                 </button>
@@ -450,7 +451,7 @@ const InquiriesManagement: React.FC = () => {
                 const isExpanded = expandedInquiry === inquiry._id;
 
                 return (
-                  <div key={inquiry._id} className={`p-6 hover:bg-gray-50 ${isSelected ? 'bg-blue-50' : ''}`}>
+                  <div key={inquiry._id} className={`p-6 hover:bg-gray-50 ${isSelected ? 'bg-gray-100' : ''}`}>
                     <div className="flex items-start gap-4">
                       <input
                         type="checkbox"
@@ -484,7 +485,7 @@ const InquiriesManagement: React.FC = () => {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => window.open(`mailto:${inquiry.email}`)}
-                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                 title="Send Email"
                               >
                                 <Mail size={16} />
@@ -512,15 +513,22 @@ const InquiriesManagement: React.FC = () => {
                                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                                     <div className="py-1">
                                       <button
+                                        onClick={() => handleStatusUpdate(inquiry._id, 'pending')}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-700 flex items-center gap-2"
+                                      >
+                                        <Clock size={16} />
+                                        Mark as Pending
+                                      </button>
+                                      <button
                                         onClick={() => handleStatusUpdate(inquiry._id, 'contacted')}
-                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2"
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-700 flex items-center gap-2"
                                       >
                                         <CheckCircle size={16} />
                                         Mark as Contacted
                                       </button>
                                       <button
                                         onClick={() => handleStatusUpdate(inquiry._id, 'closed')}
-                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2"
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-700 flex items-center gap-2"
                                       >
                                         <XCircle size={16} />
                                         Mark as Closed
@@ -535,7 +543,7 @@ const InquiriesManagement: React.FC = () => {
                                       <hr className="my-1" />
                                       <button
                                         onClick={() => handleDeleteInquiry(inquiry._id)}
-                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                        className="w-full text-left px-4 py-2 text-sm text-dot hover:bg-dot/10 flex items-center gap-2"
                                       >
                                         <Trash2 size={16} />
                                         Delete Inquiry
@@ -595,7 +603,7 @@ const InquiriesManagement: React.FC = () => {
                           {inquiry.message && inquiry.message.length > 150 && (
                             <button
                               onClick={() => setExpandedInquiry(isExpanded ? null : inquiry._id)}
-                              className="text-blue-600 hover:text-blue-800 text-sm font-medium mt-1"
+                              className="text-gray-700 hover:text-gray-700 text-sm font-medium mt-1"
                             >
                               {isExpanded ? 'Show Less' : 'Read More'}
                             </button>
@@ -635,7 +643,7 @@ const InquiriesManagement: React.FC = () => {
                                 <div className="space-y-2">
                                   <button
                                     onClick={() => window.open(`mailto:${inquiry.email}`)}
-                                    className="w-full flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                                    className="w-full flex items-center gap-2 bg-gray-900 text-white px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm"
                                   >
                                     <Mail size={16} />
                                     Send Email
@@ -664,7 +672,7 @@ const InquiriesManagement: React.FC = () => {
 
       {/* Note Modal */}
       {showNoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-charcoal/70 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Note</h3>

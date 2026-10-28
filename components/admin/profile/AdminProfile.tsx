@@ -11,7 +11,6 @@ import {
   Calendar,
   Save,
   ArrowLeft,
-  Camera,
   Shield,
 } from 'lucide-react';
 
@@ -20,7 +19,6 @@ interface ProfileFormData {
   lastName: string;
   email: string;
   phone?: string;
-  address?: string;
   bio?: string;
 }
 
@@ -40,7 +38,6 @@ const AdminProfile: React.FC = () => {
     lastName: '',
     email: '',
     phone: '',
-    address: '',
     bio: '',
   });
   const [hasChanges, setHasChanges] = useState(false);
@@ -62,7 +59,6 @@ const AdminProfile: React.FC = () => {
         lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
-        address: user.address || '',
         bio: user.bio || '',
       });
     }
@@ -115,7 +111,6 @@ const AdminProfile: React.FC = () => {
         lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
-        address: user.address || '',
         bio: user.bio || '',
       });
       setHasChanges(false);
@@ -125,7 +120,7 @@ const AdminProfile: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin"></div>
           <span className="text-gray-800">Loading...</span>
@@ -139,7 +134,7 @@ const AdminProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="">
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -151,7 +146,7 @@ const AdminProfile: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Dashboard</span>
           </button>
-          <h1 className="text-3xl font-bold text-gray-800">Profile Settings</h1>
+          <h2 className="text-2xl font-semibold text-gray-900">Profile settings</h2>
           <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
         </div>
 
@@ -164,15 +159,9 @@ const AdminProfile: React.FC = () => {
                 <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
                   <User className="w-10 h-10 text-gray-800" />
                 </div>
-                <button
-                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
-                  aria-label="Upload profile picture"
-                >
-                  <Camera className="w-4 h-4 text-gray-800" />
-                </button>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">{user?.name || 'Admin User'}</h2>
+                <h2 className="text-2xl font-bold text-white">{user?.name || 'Admin'}</h2>
                 <p className="text-gray-200">{user?.email}</p>
                 <div className="flex items-center space-x-1 mt-1">
                   <Shield className="w-4 h-4 text-gray-200" />
@@ -209,8 +198,8 @@ const AdminProfile: React.FC = () => {
               <form onSubmit={handleProfileSubmit} className="space-y-6">
                 {/* Error Message */}
                 {(updateProfileError || errors.api) && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-sm">
+                  <div className="p-4 bg-dot/10 border border-dot/40 rounded-lg">
+                    <p className="text-dot text-sm">
                       {errors.api || (updateProfileError instanceof Error ? updateProfileError.message : 'Update failed. Please try again.')}
                     </p>
                   </div>
@@ -231,7 +220,7 @@ const AdminProfile: React.FC = () => {
                         value={profileData.firstName}
                         onChange={handleProfileInputChange}
                         className={`w-full pl-10 pr-4 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${
-                          errors.firstName ? 'border-red-500' : ''
+                          errors.firstName ? 'border-dot/40' : ''
                         }`}
                         placeholder="Enter your first name"
                         required
@@ -239,7 +228,7 @@ const AdminProfile: React.FC = () => {
                         aria-describedby={errors.firstName ? 'firstName-error' : undefined}
                       />
                       {errors.firstName && (
-                        <p id="firstName-error" className="mt-1 text-sm text-red-600">
+                        <p id="firstName-error" className="mt-1 text-sm text-dot">
                           {errors.firstName}
                         </p>
                       )}
@@ -260,7 +249,7 @@ const AdminProfile: React.FC = () => {
                         value={profileData.lastName}
                         onChange={handleProfileInputChange}
                         className={`w-full pl-10 pr-4 py-3 text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${
-                          errors.lastName ? 'border-red-500' : ''
+                          errors.lastName ? 'border-dot/40' : ''
                         }`}
                         placeholder="Enter your last name"
                         required
@@ -268,7 +257,7 @@ const AdminProfile: React.FC = () => {
                         aria-describedby={errors.lastName ? 'lastName-error' : undefined}
                       />
                       {errors.lastName && (
-                        <p id="lastName-error" className="mt-1 text-sm text-red-600">
+                        <p id="lastName-error" className="mt-1 text-sm text-dot">
                           {errors.lastName}
                         </p>
                       )}
@@ -289,7 +278,7 @@ const AdminProfile: React.FC = () => {
                         value={profileData.email}
                         onChange={handleProfileInputChange}
                         className={`w-full pl-10 pr-4 py-3 border text-gray-700 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-transparent ${
-                          errors.email ? 'border-red-500' : ''
+                          errors.email ? 'border-dot/40' : ''
                         }`}
                         placeholder="Enter your email"
                         required
@@ -297,7 +286,7 @@ const AdminProfile: React.FC = () => {
                         aria-describedby={errors.email ? 'email-error' : undefined}
                       />
                       {errors.email && (
-                        <p id="email-error" className="mt-1 text-sm text-red-600">
+                        <p id="email-error" className="mt-1 text-sm text-dot">
                           {errors.email}
                         </p>
                       )}
@@ -343,7 +332,7 @@ const AdminProfile: React.FC = () => {
                 {/* Form Buttons */}
                 <div className="flex items-center justify-end space-x-4">
                   {hasChanges && (
-                    <span className="text-sm text-amber-600">You have unsaved changes</span>
+                    <span className="text-sm text-gray-700">You have unsaved changes</span>
                   )}
                   <button
                     type="button"
@@ -399,7 +388,7 @@ const AdminProfile: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Account Status</p>
-                <p className="text-lg font-semibold text-green-600">Active</p>
+                <p className="text-lg font-semibold text-gray-700">Active</p>
               </div>
             </div>
           </div>

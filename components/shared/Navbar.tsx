@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { LuFacebook, LuInstagram } from "react-icons/lu";
 import { FaXTwitter, FaTiktok } from "react-icons/fa6";
@@ -11,73 +12,72 @@ interface HeaderProps {
   isScrolled: boolean;
 }
 
+const navItems = [
+  { name: 'Home', path: '/' },
+  { name: 'Work', path: '/work' },
+  { name: 'About', path: '/about' },
+  { name: 'Exhibitions', path: '/exhibitions' },
+  { name: 'Contact', path: '/contact' }
+];
+
+const socialLinks = [
+  { icon: LuInstagram, label: 'Instagram', href: 'https://www.instagram.com/joc_arts?igsh=MXZ0NWw2eTE3bWc3dg%3D%3D&utm_source=qr' },
+  { icon: LuFacebook, label: 'Facebook', href: 'https://www.facebook.com/share/1AYRhXUtQH/?mibextid=wwXIfr' },
+  { icon: FaXTwitter, label: 'Twitter', href: 'https://x.com/skye_worldwide1?s=21' },
+  { icon: FaTiktok, label: 'TikTok', href: 'https://www.tiktok.com/@skye_worldwide?_t=ZM-8xZpNt2GNZl&_r=1' }
+];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isHamburgerVisible, setIsHamburgerVisible] = useState(true);
+  const [isHidden, setIsHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const router = useRouter();
+  const [hasScrolled, setHasScrolled] = useState(false);
   const pathname = usePathname();
 
-  const navItems = [
-    { name: 'Home', path: '/' },
-    { name: 'Work', path: '/work' },
-    { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/contact' },
-    { name: 'Exhibitions', path: '/exhibitions' }
-  ];
+  const isActive = (path: string) =>
+    path === '/' ? pathname === '/' : pathname?.startsWith(path);
 
-  const socialLinks = [
-    { icon: LuInstagram, label: 'Instagram', href: 'https://www.instagram.com/joc_arts?igsh=MXZ0NWw2eTE3bWc3dg%3D%3D&utm_source=qr' },
-    { icon: LuFacebook, label: 'Facebook', href: 'https://www.facebook.com/share/1AYRhXUtQH/?mibextid=wwXIfr' },
-    { icon: FaXTwitter, label: 'Twitter', href: 'https://x.com/skye_worldwide1?s=21' },
-    { icon: FaTiktok, label: 'TikTok', href: 'https://www.tiktok.com/@skye_worldwide?_t=ZM-8xZpNt2GNZl&_r=1' }
-  ];
+  const toggleMenu = () => setIsMenuOpen((open) => !open);
 
-  const handleNavClick = (path: string) => {
-    router.push(path);
+  // Close the menu whenever the route changes
+  useEffect(() => {
     setIsMenuOpen(false);
-  };
+  }, [pathname]);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  // Handle scroll direction detection
+  // Slide the bar away on scroll down, bring it back on scroll up
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
-      // Only hide/show if we've scrolled more than 10px to avoid jitter
+      setHasScrolled(currentScrollY > 24);
+
       if (Math.abs(currentScrollY - lastScrollY) < 10) return;
-      
+
       if (currentScrollY < lastScrollY) {
-        // Scrolling up - show hamburger
-        setIsHamburgerVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and not at the very top - hide hamburger
-        setIsHamburgerVisible(false);
+        setIsHidden(false);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 120) {
+        setIsHidden(true);
       }
-      
+
       setLastScrollY(currentScrollY);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  // Prevent scrolling when menu is open
+  // Prevent scrolling when menu is open; close on Escape
   useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    document.body.style.overflow = isMenuOpen ? 'hidden' : 'unset';
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
 
     return () => {
       document.body.style.overflow = 'unset';
+      document.removeEventListener('keydown', onKey);
     };
   }, [isMenuOpen]);
 
@@ -88,88 +88,101 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
 
   return (
     <>
-      <div className={`fixed left-6 top-1/2 transform -translate-y-1/2 z-40 flex-col space-y-6 transition-all duration-500 hidden lg:flex ${
-        isMenuOpen ? 'opacity-0 invisible translate-x-[-20px]' : isScrolled ? 'opacity-60 scale-90' : 'opacity-100 scale-100'
-      }`}>
-        {socialLinks.map((social) => {
-          const IconComponent = social.icon;
-          return (
-            <a
-              key={social.label}
-              href={social.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-12 h-12  flex items-center justify-center rounded-full transition-all duration-500 hover:scale-110 hover:shadow-xl hover:border-gray-900 hover:bg-gray-900 hover:text-white ${
-                isScrolled 
-                  ? 'bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-md' 
-                  : 'bg-white border border-gray-200 shadow-lg'
-              }`}
-              aria-label={social.label}
-            >
-              <IconComponent className="w-6 h-6 " />
-            </a>
-          );
-        })}
-      </div>
-
-      {/* Floating Hamburger Menu - Responsive to scroll and scroll direction */}
-      <button
-        onClick={toggleMenu}
-        className={`fixed left-1/2 transform -translate-x-1/2 z-50 w-12 h-12 flex items-center justify-center rounded-full focus:outline-none transition-all duration-500 hover:scale-110 hover:shadow-xl ${
-          isScrolled 
-            ? 'top-4 bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-md scale-95' 
-            : 'top-6 bg-white border border-gray-200 shadow-lg scale-100'
-        } ${
-          isHamburgerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
-        }`}
-        aria-label="Toggle menu"
+      <header
+        className={`fixed inset-x-0 top-0 z-40 transition-transform duration-500 ${
+          isHidden && !isMenuOpen ? '-translate-y-full' : 'translate-y-0'
+        } ${hasScrolled ? 'bg-wall/90 backdrop-blur-md border-b border-rule' : 'bg-transparent border-b border-transparent'}`}
       >
-        <div className="relative w-5 h-5">
-          <span className={`absolute top-1 left-0 w-5 h-px transition-all duration-500 ${
-            isMenuOpen ? 'rotate-45 translate-y-2 bg-gray-900' : isScrolled ? 'bg-gray-700' : 'bg-gray-900'
-          }`}></span>
-          <span className={`absolute top-2.5 left-0 w-5 h-px transition-all duration-500 ${
-            isMenuOpen ? 'opacity-0' : isScrolled ? 'bg-gray-700' : 'bg-gray-900'
-          }`}></span>
-          <span className={`absolute top-4 left-0 w-5 h-px transition-all duration-500 ${
-            isMenuOpen ? '-rotate-45 -translate-y-2 bg-gray-900' : isScrolled ? 'bg-gray-700' : 'bg-gray-900'
-          }`}></span>
-        </div>
-      </button>
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:h-20 lg:px-10">
+          <Link href="/" className="group flex items-baseline gap-3" aria-label="Joshua Otuonye, home">
+            <span className="font-display text-lg font-semibold tracking-tight text-ink lg:text-xl">
+              Joshua Otuonye
+            </span>
+            <span className="label hidden sm:inline">JOC Arts</span>
+          </Link>
 
-      {/* Full Screen Menu Overlay */}
-      <div className={`fixed inset-0 z-40 bg-white transition-all duration-500 artist-body ${
-        isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-      }`}>
-        <div className="flex flex-col items-center justify-center min-h-screen py-20">
-          <nav className="text-center mb-10">
-            {navItems.map((item, index) => (
-              <button
+          <nav className="hidden items-center gap-9 lg:flex" aria-label="Main">
+            {navItems.filter((item) => item.path !== '/').map((item) => (
+              <Link
                 key={item.name}
-                onClick={() => handleNavClick(item.path)}
-                className={`block w-full py-4 text-4xl md:text-5xl font-light text-gray-900 hover:text-gray-600 transition-all duration-300 transform ${
-                  isMenuOpen 
-                    ? 'translate-y-0 opacity-100' 
-                    : 'translate-y-8 opacity-0'
+                href={item.path}
+                aria-current={isActive(item.path) ? 'page' : undefined}
+                className={`relative py-1 text-sm transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:bg-ink after:transition-transform after:duration-300 ${
+                  isActive(item.path)
+                    ? 'text-ink after:scale-x-100'
+                    : 'text-lead hover:text-ink after:scale-x-0 hover:after:scale-x-100'
                 }`}
-                style={{ 
-                  transitionDelay: isMenuOpen ? `${index * 100 + 200}ms` : '0ms'
-                }}
               >
                 {item.name}
-              </button>
+              </Link>
             ))}
+            <Link
+              href="/portraits-commission"
+              className="border border-ink px-4 py-2 text-sm text-ink transition-colors hover:bg-ink hover:text-mat"
+            >
+              Commission a portrait
+            </Link>
           </nav>
 
-          {/* Social Links in Menu */}
-          <div className={`flex space-x-6 transition-all duration-300 transform ${
-            isMenuOpen 
-              ? 'translate-y-0 opacity-100' 
-              : 'translate-y-8 opacity-0'
-          }`}
-          style={{ 
-            transitionDelay: isMenuOpen ? `${navItems.length * 100 + 400}ms` : '0ms'
-          }}>
+          <button
+            onClick={toggleMenu}
+            className="-mr-2 flex h-11 w-11 items-center justify-center lg:hidden"
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isMenuOpen}
+          >
+            <span className="relative block h-3 w-6">
+              <span className="absolute left-0 top-0 h-px w-6 bg-ink" />
+              <span className="absolute bottom-0 left-0 h-px w-6 bg-ink" />
+            </span>
+          </button>
+        </div>
+      </header>
+
+      {/* Full-screen menu (small screens) */}
+      <div
+        className={`fixed inset-0 z-50 bg-charcoal text-mat transition-all duration-500 lg:hidden ${
+          isMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
+        }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+      >
+        <div className="flex h-16 items-center justify-between px-6">
+          <span className="font-display text-lg font-semibold">Joshua Otuonye</span>
+          <button
+            onClick={toggleMenu}
+            className="-mr-2 flex h-11 w-11 items-center justify-center"
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="flex h-[calc(100%-4rem)] flex-col justify-between px-6 pb-10 pt-6">
+          <nav aria-label="Mobile">
+            {navItems.map((item, index) => (
+              <Link
+                key={item.name}
+                href={item.path}
+                onClick={() => setIsMenuOpen(false)}
+                className={`flex items-baseline justify-between border-b border-white/10 py-5 font-display text-4xl font-semibold transition-all duration-500 ${
+                  isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+                } ${isActive(item.path) ? 'text-mat' : 'text-mat/60 hover:text-mat'}`}
+                style={{ transitionDelay: isMenuOpen ? `${index * 70 + 150}ms` : '0ms' }}
+              >
+                {item.name}
+              </Link>
+            ))}
+            <Link
+              href="/portraits-commission"
+              onClick={() => setIsMenuOpen(false)}
+              className="mt-8 inline-block border border-mat/60 px-5 py-3 text-sm hover:bg-mat hover:text-ink"
+            >
+              Commission a portrait
+            </Link>
+          </nav>
+
+          <div className="flex gap-3">
             {socialLinks.map((social) => {
               const IconComponent = social.icon;
               return (
@@ -178,24 +191,15 @@ const Header: React.FC<HeaderProps> = ({ isScrolled }) => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-12 h-12 flex items-center justify-center border border-gray-300 hover:border-gray-900 hover:bg-gray-900 hover:text-white transition-all duration-300 rounded-full"
+                  className="flex h-11 w-11 items-center justify-center border border-white/25 transition-colors hover:bg-mat hover:text-ink"
                   aria-label={social.label}
                 >
-                  <IconComponent className="w-5 h-5" />
+                  <IconComponent className="h-5 w-5" />
                 </a>
               );
             })}
           </div>
         </div>
-
-        {/* Close button (alternative to hamburger) */}
-        <button
-          onClick={toggleMenu}
-          className="absolute top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 flex items-center justify-center text-gray-900 hover:text-gray-600 transition-colors duration-300"
-          aria-label="Close menu"
-        >
-          <X size={24} />
-        </button>
       </div>
     </>
   );

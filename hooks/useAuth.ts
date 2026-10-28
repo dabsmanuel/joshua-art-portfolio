@@ -1,8 +1,22 @@
 // hooks/useAuth.js
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '../services/authService';
 import { handleApiError } from '../utils/errorHandler';
+import type { TypedApiError } from '../types/error';
 import { toast } from 'react-hot-toast';
+
+interface UserAccount {
+  _id: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  bio?: string;
+  phone?: string;
+  role: string;
+  createdAt?: string;
+}
 
 // Query keys for cache management
 export const authQueryKeys = {
@@ -87,9 +101,9 @@ export const useCurrentUser = () => {
     queryFn: async () => {
       try {
         return await authService.getCurrentUser();
-      } catch (error: any) {
+      } catch (error) {
         // If unauthorized, clear auth state and throw
-        if (error?.response?.status === 401) {
+        if ((error as TypedApiError)?.response?.status === 401) {
           queryClient.setQueryData(authQueryKeys.isAuthenticated, false);
           queryClient.setQueryData(authQueryKeys.currentUser, null);
           authService.clearTokens(); // Clear invalid tokens
@@ -99,8 +113,8 @@ export const useCurrentUser = () => {
     },
     enabled: authService.hasTokens(),
     staleTime: 5 * 60 * 1000, 
-    retry: (failureCount, error: any) => {
-      if (error?.response?.status === 401) {
+    retry: (failureCount, error) => {
+      if ((error as TypedApiError)?.response?.status === 401) {
         return false;
       }
       return failureCount < 2;
@@ -108,7 +122,13 @@ export const useCurrentUser = () => {
     gcTime: 0
   });
 
-  queryResult.error && queryResult.error?.response?.status !== 401 && toast.error(handleApiError(queryResult.error));
+  // Report unexpected errors once per error, not on every render
+  const queryError = queryResult.error as TypedApiError | null;
+  useEffect(() => {
+    if (queryError && queryError?.response?.status !== 401) {
+      toast.error(handleApiError(queryError), { id: 'current-user-error' });
+    }
+  }, [queryError]);
 
   return queryResult;
 };
@@ -157,7 +177,7 @@ export const useRefreshToken = () => {
       queryClient.invalidateQueries({ queryKey: authQueryKeys.currentUser });
     },
 
-    onError: (error: any) => {
+    onError: (error: TypedApiError) => {
       // Clear auth state on refresh failure
       queryClient.setQueryData(authQueryKeys.isAuthenticated, false);
       queryClient.setQueryData(authQueryKeys.currentUser, null);
@@ -175,7 +195,6 @@ export const useRefreshToken = () => {
 // Combined auth hook for convenience
 export const useAuth = () => {
   const { data: currentUser, isLoading: userLoading, error: userError } = useCurrentUser();
-  const { data: isAuthenticated, isLoading: authLoading } = useAuthStatus();
   const loginMutation = useLogin();
   const logoutMutation = useLogout();
   const registerMutation = useRegister();
@@ -184,9 +203,18 @@ export const useAuth = () => {
   // Determine if we're actually authenticated
   const actuallyAuthenticated = !!currentUser && !userError && authService.hasTokens();
 
+  // The API wraps the account as { user }. Unwrap it and add a display name.
+  const account = (currentUser as { user?: UserAccount } | undefined)?.user ?? null;
+  const user = account
+    ? {
+        ...account,
+        name: [account.firstName, account.lastName].filter(Boolean).join(' ') || account.username || '',
+      }
+    : null;
+
   return {
     // User data
-    user: currentUser || null,
+    user,
     isAuthenticated: actuallyAuthenticated,
     
     // Loading states
@@ -197,7 +225,7 @@ export const useAuth = () => {
     isUpdateProfileLoading: updateProfileMutation.isPending,
     
     // Error states
-    userError: userError && 'response' in userError && (userError as any).response?.status !== 401 ? userError : null, // Don't expose 401 errors
+    userError: userError && (userError as TypedApiError).response?.status !== 401 ? userError : null, // Don't expose 401 errors
     loginError: loginMutation.error,
     logoutError: logoutMutation.error,
     registerError: registerMutation.error,

@@ -45,13 +45,13 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({
         {(artwork.featured || artwork.sold) && (
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             {artwork.featured && (
-              <div className="bg-white/90 backdrop-blur-sm text-amber-600 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+              <div className="bg-white/90 backdrop-blur-sm text-gray-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
                 <Star size={10} fill="currentColor" />
                 Featured
               </div>
             )}
             {artwork.sold && (
-              <div className="bg-white/90 backdrop-blur-sm text-red-600 px-2 py-1 rounded text-xs font-medium">
+              <div className="bg-white/90 backdrop-blur-sm text-dot px-2 py-1 rounded text-xs font-medium">
                 Sold
               </div>
             )}
@@ -116,7 +116,7 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({
           
           <button
             onClick={() => onEdit(artwork)}
-            className="text-blue-600 hover:text-blue-700 transition-colors p-1"
+            className="text-gray-700 hover:text-gray-700 transition-colors p-1"
             title="Edit artwork"
           >
             <Edit size={16} />
@@ -125,7 +125,7 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({
           <button
             onClick={() => onDelete(artwork.id)}
             disabled={isDeleting}
-            className="text-red-600 hover:text-red-700 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-dot hover:text-dot transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
             title={isDeleting ? 'Deleting...' : 'Delete artwork'}
           >
             <Trash2 size={16} />

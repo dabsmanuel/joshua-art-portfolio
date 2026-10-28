@@ -59,14 +59,14 @@ export const ArtworkImageManager: React.FC<ArtworkImageManagerProps> = ({
 
   if (error) {
     return (
-      <div className="text-center py-8 text-red-600">
+      <div className="text-center py-8 text-dot">
         Error loading images. Please try again.
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-charcoal/70 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
@@ -117,7 +117,7 @@ export const ArtworkImageManager: React.FC<ArtworkImageManagerProps> = ({
                     <button
                       type="button"
                       onClick={() => removeNewImage(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      className="absolute -top-2 -right-2 bg-dot text-white rounded-full p-1 hover:bg-dot/90"
                     >
                       <X size={16} />
                     </button>
@@ -150,7 +150,7 @@ export const ArtworkImageManager: React.FC<ArtworkImageManagerProps> = ({
                 {(() => {
                   const images = typedImagesData?.images;
                   return images?.map((image: ArtworkImageData) => (
-                    <div key={image._id} className="relative group">
+                    <div key={image._id ?? image.id ?? image.publicId} className="relative group">
                       <Image
                         src={image.url}
                         alt={image.alt || artwork.title}
@@ -159,23 +159,23 @@ export const ArtworkImageManager: React.FC<ArtworkImageManagerProps> = ({
                         className="w-full h-32 object-cover rounded-md"
                       />
                       {image.publicId === typedImagesData?.primaryImage?.publicId && (
-                        <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <div className="absolute top-2 left-2 bg-gray-900 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
                           <Star size={12} />
                           Primary
                         </div>
                       )}
-                      <div className="absolute inset-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-black/20 transition-colors group-hover:bg-charcoal/70 flex flex-wrap items-center justify-center gap-2">
                         <button
                           onClick={() => handleSetPrimary(image.publicId)}
                           disabled={isSettingPrimary || image.publicId === typedImagesData?.primaryImage?.publicId}
-                          className="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 disabled:opacity-50"
+                          className="bg-gray-900 text-white px-3 py-1 rounded-md hover:bg-gray-900 disabled:opacity-50"
                         >
                           Set Primary
                         </button>
                         <button
                           onClick={() => handleRemoveImage(image.publicId)}
                           disabled={isRemovingImage}
-                          className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 disabled:opacity-50"
+                          className="bg-dot text-white px-3 py-1 rounded-md hover:bg-dot/90 disabled:opacity-50"
                         >
                           Remove
                         </button>

@@ -5,6 +5,7 @@ import { contactService } from '../services/contactService';
 import { ContactInput, ContactResponse, ContactsResponse, UpdateContactInput } from '../types/contact';
 import { toast } from 'react-hot-toast';
 import { handleApiError } from '../utils/errorHandler';
+import type { TypedApiError } from '../types/error';
 
 // Query keys for cache management
 export const contactQueryKeys = {
@@ -18,7 +19,7 @@ export const useCreateContact = () => {
 
   return useMutation<ContactResponse, Error, ContactInput>({
     mutationFn: contactService.createContact,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: contactQueryKeys.all });
       toast.success('Contact inquiry submitted successfully!');
     },
@@ -38,12 +39,7 @@ export const useGetAllContacts = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
       // Don't retry on 401 errors
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        (error as any).response?.status === 401
-      ) {
+      if ((error as TypedApiError)?.response?.status === 401) {
         return false;
       }
       return true;

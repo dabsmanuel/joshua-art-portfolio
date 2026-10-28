@@ -1,4 +1,4 @@
-import { ErrorResponse, ApiError , BackendErrorData, BackendErrorResponse, TypedApiError, HandleApiErrorOptions, LogErrorToService, ValidationErrors, IsRecoverableError, GetRetryDelayError} from "@/types/error";
+import { ApiError, TypedApiError, LogErrorToService, ValidationErrors, IsRecoverableError, GetRetryDelayError } from "@/types/error";
 
 /**
  * Centralized error handling utility
@@ -285,7 +285,7 @@ export const getRetryDelay = (
   return 3000; // 3 seconds
 };
 
-export default {
+const errorHandler = {
   handleApiError,
   getErrorType,
   getErrorMessage,
@@ -294,3 +294,5 @@ export default {
   getRetryDelay,
   ERROR_TYPES,
 };
+
+export default errorHandler;

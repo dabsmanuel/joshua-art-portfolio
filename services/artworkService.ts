@@ -5,12 +5,12 @@ import {ArtworkResponse} from '../types/artwork'
 export const artworkService = {
   // Create new artwork with images
   createArtwork: async (artworkData: FormData): Promise<ArtworkResponse> => {
-    const response = await api.post<ArtworkResponse>('/artwork', artworkData, {
+    const response = await api.post<{ artwork: ArtworkResponse }>('/artwork', artworkData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
+    return response.data.artwork;
   },
 
   // Get all artworks
@@ -21,9 +21,7 @@ export const artworkService = {
   featured?: boolean;
   sold?: boolean;
 }): Promise<{ artworks: ArtworkResponse[]; total: number; page: number; totalPages: number }> => {
-  console.log('Requesting artworks with params:', params);
   const response = await api.get('/artwork', { params });
-  console.log('Response:', response.data);
   return response.data;
 },
 
@@ -35,12 +33,12 @@ export const artworkService = {
 
   // Update artwork with optional new images
   updateArtwork: async (id: string, artworkData: FormData): Promise<ArtworkResponse> => {
-    const response = await api.put<ArtworkResponse>(`/artwork/${id}`, artworkData, {
+    const response = await api.put<{ artwork: ArtworkResponse }>(`/artwork/${id}`, artworkData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
+    return response.data.artwork;
   },
 
   // Delete artwork
@@ -92,7 +90,7 @@ export const artworkService = {
   },
   // Get featured artworks
   getFeaturedArtworks: async (): Promise<ArtworkResponse[]> => {
-    const response = await api.get('/artwork?featured=true');
+    const response = await api.get('/artwork', { params: { featured: true, limit: 12 } });
     return response.data.artworks;
   },
 

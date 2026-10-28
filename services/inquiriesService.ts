@@ -1,5 +1,5 @@
 import api from "./authService"; // Assuming this is the same axios instance
-import { Inquiry, InquiryInput, InquiryResponse, InquiriesResponse } from "../types/inquiry";
+import { InquiryInput, InquiryResponse, InquiriesResponse } from "../types/inquiry";
 
 export interface BulkActionPayload {
   action: 'delete' | 'update-status' | 'archive';
@@ -73,7 +73,7 @@ export const inquiryService = {
   bulkAction: async (payload: BulkActionPayload): Promise<{
     message: string;
     affected: number;
-    result: any;
+    result: unknown;
   }> => {
     const response = await api.post('/inquiries/bulk-actions', payload);
     return response.data;
