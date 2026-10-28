@@ -15,7 +15,7 @@ export const uploadQueryKeys: UploadQueryKeys = {
 export const useUploadSingleImage = () => {
   return useMutation({
     mutationFn: uploadService.uploadSingleImage,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Image uploaded successfully!');
     },
     onError: (error) => {

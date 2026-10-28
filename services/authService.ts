@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Flag to prevent multiple refresh attempts
 let isRefreshing = false;
-let failedQueue: { resolve: (value: unknown) => void; reject: (reason?: any) => void; }[] = [];
+let failedQueue: { resolve: (value: unknown) => void; reject: (reason?: unknown) => void; }[] = [];
 
 const processQueue = (error: unknown, token = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -45,7 +45,10 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthCall =
+      typeof originalRequest?.url === 'string' && /\/auth\/(login|refresh|register)/.test(originalRequest.url);
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthCall) {
       if (isRefreshing) {
         // If already refreshing, queue this request
         return new Promise((resolve, reject) => {
@@ -90,7 +93,7 @@ api.interceptors.response.use(
         
         // Only redirect if we're in a browser environment
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          window.location.href = '/admin/login';
         }
         
         return Promise.reject(refreshError);
@@ -117,7 +120,7 @@ export const authService = {
 
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/auth/login', credentials);
-    const { accessToken, refreshToken, user } = response.data;
+    const { accessToken, refreshToken } = response.data;
     
     // Store tokens in localStorage
     if (accessToken) localStorage.setItem('accessToken', accessToken);

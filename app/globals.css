@@ -1,61 +1,220 @@
 @import "tailwindcss";
 
-/* Custom font classes */
+/*
+  Design tokens.
+  The site is a gallery wall: cool neutral surfaces, graphite ink, and no colour
+  of its own, so the colour inside each artwork is the only colour on the page.
+  The one accent (--color-dot) is the red dot galleries put beside a sold work.
+
+  Tailwind's gray scale, radii, shadows and light weights are remapped here so
+  every page (including the commission pages and admin) inherits the palette.
+*/
+@theme {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-label), ui-monospace, monospace;
+
+  --color-white: #f8f8f5;
+  --color-black: #0c0c0e;
+
+  --color-gray-50: #f3f3f0;
+  --color-gray-100: #ebebe7;
+  --color-gray-200: #dcdcd7;
+  --color-gray-300: #c5c5bf;
+  --color-gray-400: #9a9b97;
+  --color-gray-500: #75777a;
+  --color-gray-600: #54565b;
+  --color-gray-700: #3c3e43;
+  --color-gray-800: #26272b;
+  --color-gray-900: #15161a;
+  --color-gray-950: #0c0c0e;
+
+  --color-wall: #ebebe7;
+  --color-mat: #f8f8f5;
+  --color-ink: #15161a;
+  --color-lead: #54565b;
+  --color-rule: #c9c9c3;
+  --color-charcoal: #1c1d21;
+  --color-dot: #d63a2c;
+
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 3px;
+  --radius-3xl: 4px;
+
+  --shadow-md: 0 1px 0 rgb(21 22 26 / 0.04), 0 10px 24px -16px rgb(21 22 26 / 0.28);
+  --shadow-lg: 0 1px 0 rgb(21 22 26 / 0.04), 0 18px 36px -20px rgb(21 22 26 / 0.32);
+  --shadow-xl: 0 1px 0 rgb(21 22 26 / 0.04), 0 24px 48px -22px rgb(21 22 26 / 0.36);
+  --shadow-2xl: 0 30px 60px -28px rgb(21 22 26 / 0.45);
+
+  --font-weight-thin: 400;
+  --font-weight-extralight: 400;
+  --font-weight-light: 400;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-wall);
+  }
+
+  body {
+    background: var(--color-wall);
+    color: var(--color-ink);
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    font-weight: 600;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-mat);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Type roles ------------------------------------------------------------- */
 .font-display {
-  font-family: var(--font-crimson), serif;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
 }
 
 .font-sans {
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Artist-specific typography styles */
+.font-label {
+  font-family: var(--font-label), ui-monospace, monospace;
+}
+
 .artist-heading {
-  font-family: var(--font-crimson), serif;
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
 }
 
-body {
-  font-family: var(--font-crimson), serif;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-}
-
-.artist-body {
-  font-family: var(--font-inter), sans-serif;
-  font-weight: 400;
+.artist-body,
+.artist,
+.artist-subheading {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   line-height: 1.6;
-  letter-spacing: 0.005em;
 }
 
-.artist{
-  font-family: var(--font-poppins), sans-serif;
-  font-weight: 400;
-  line-height: 1.6;
-  letter-spacing: 0.005em;
+/* Museum wall label: the repeated device for every piece of work */
+.label {
+  font-family: var(--font-label), ui-monospace, monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-lead);
 }
 
-/* Enhanced smooth scrolling */
-html {
-  scroll-behavior: smooth;
+.sold-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: var(--color-dot);
+  flex: none;
 }
 
-/* Custom selection colors for artistic feel */
-::selection {
-  background-color: rgba(0, 0, 0, 0.1);
-  color: inherit;
+/* A work hung on the wall: white mat, hairline edge, soft contact shadow */
+.hung {
+  background: var(--color-mat);
+  padding: clamp(0.6rem, 2.2vw, 1.25rem);
+  box-shadow:
+    0 0 0 1px rgb(21 22 26 / 0.08),
+    0 22px 40px -26px rgb(21 22 26 / 0.5);
 }
 
-::-moz-selection {
-  background-color: rgba(0, 0, 0, 0.1);
-  color: inherit;
+/* Reveal on scroll (see components/shared/Reveal.tsx) */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  transition-property: color, background-color, border-color, opacity, transform;
-  transition-duration: 0.2s;
-  transition-timing-function: ease-in-out;
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+.animate-rise-in {
+  animation: rise-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .animate-fade-in,
+  .animate-rise-in {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -9,119 +9,75 @@ interface ArtworkCardProps {
   onClick: () => void;
 }
 
+// A work on the wall with its museum label underneath.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, isVisible, delay, onClick }) => {
   const imageUrl = artwork.primaryImage?.url || artwork.images?.[0]?.url || '';
   const imageAlt = artwork.primaryImage?.alt || artwork.images?.[0]?.alt || artwork.title;
 
   const getStatusLabel = () => {
-    if (artwork.featured) return 'Featured';
     if (artwork.sold) return 'Sold';
+    if (artwork.featured) return 'Featured';
     return 'Available';
   };
 
   return (
-    <div
+    <button
+      type="button"
       id={`artwork-${artwork.id}`}
-      data-animate
-      className={`group cursor-pointer transition-all duration-1000 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-      }`}
-      style={{ transitionDelay: `${delay}ms` }}
       onClick={onClick}
+      className="group block w-full text-left"
+      aria-label={`View ${artwork.title}`}
     >
-      <div className="relative bg-gradient-to-br from-slate-900 via-gray-900 to-black rounded-2xl overflow-hidden border border-gray-700/50 hover:border-amber-400/50 transition-all duration-700 transform hover:-translate-y-3 shadow-2xl hover:shadow-3xl">
-        {/* Artistic glow effect */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-amber-600/20 to-blue-600/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        
-        {/* Main artwork display area */}
-        <div className="relative aspect-[4/5] bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden">
-          {/* Paper texture overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-gray-100/30 to-transparent opacity-40"></div>
-          
-          {/* Artwork image */}
+      <div className="hung transition-transform duration-500 group-hover:-translate-y-1">
+        <div className="relative aspect-[4/5] overflow-hidden bg-gray-200">
           <Image
             src={imageUrl}
             alt={imageAlt}
-            width={500}
-            height={500}
-            className="w-full h-full object-cover transition-all duration-700"
+            width={600}
+            height={750}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
             loading="lazy"
-            onLoad={() => console.log(`Image loaded successfully for ${artwork.title}`)}
             onError={(e) => {
-              console.error(`Image failed to load for ${artwork.title}: ${imageUrl}`);
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               const fallback = target.nextElementSibling as HTMLDivElement;
               if (fallback) fallback.classList.remove('hidden');
             }}
           />
-          
+
           {/* Fallback content */}
-          <div className="hidden w-full h-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-            <div className="text-center text-gray-500">
-              <div className="text-2xl font-light mb-2">{artwork.title}</div>
-              <div className="text-sm italic">Image not available</div>
-            </div>
-          </div>
-          
-          {/* Artistic frame corners */}
-          <div className="absolute top-3 left-3 w-6 h-6 border-l-2 border-t-2 border-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="absolute top-3 right-3 w-6 h-6 border-r-2 border-t-2 border-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="absolute bottom-3 left-3 w-6 h-6 border-l-2 border-b-2 border-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="absolute bottom-3 right-3 w-6 h-6 border-r-2 border-b-2 border-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
-          {/* Status badge */}
-          <div className="absolute top-4 right-4 bg-gradient-to-r from-amber-600/80 to-amber-700/80 text-white text-xs font-light px-3 py-1 rounded-full">
-            {getStatusLabel()}
-          </div>
-        </div>
-        
-        {/* Information panel with sophisticated typography */}
-        <div className="relative p-6 bg-gradient-to-br from-slate-900 via-gray-900 to-black text-white">
-          <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent"></div>
-          
-          <h3 className="text-2xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-blue-200 mb-3 tracking-wide group-hover:from-amber-300 group-hover:to-blue-300 transition-all duration-300 font-serif">
-            {artwork.title}
-          </h3>
-          
-          <div className="flex items-center mb-4 text-sm text-gray-300 font-light">
-            <span className="italic text-amber-400/80">{artwork.medium}</span>
-            <span className="mx-3 w-1 h-1 bg-amber-400/60 rounded-full"></span>
-            <span className="text-gray-400">{artwork.dimensions}</span>
-          </div>
-          
-          <p className="text-gray-300 text-sm leading-relaxed font-light line-clamp-3 mb-4">
-            {artwork.description?.substring(0, 40)}
-            {artwork.description && artwork.description.length > 40 ? '...' : ''}
-          </p>
-          
-          {artwork.availableOnPrint && artwork.printSizes.length > 0 && (
-            <div className="text-sm text-gray-300 font-light mb-4">
-              <span className="font-medium text-amber-400/80">Prints Available:</span>
-              <ul className="ml-4 list-disc">
-                {artwork.printSizes.map(({ size, price }) => (
-                  <li key={size}>
-                    {size.charAt(0).toUpperCase() + size.slice(1)}: £{price}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          <div className="flex items-center justify-between pt-4 border-t border-gray-700/50">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-px bg-gradient-to-r from-amber-400/50 to-transparent"></div>
-              <div className="w-1 h-1 bg-amber-400/50 rounded-full"></div>
-            </div>
-            <div className="text-xs text-gray-500 font-light tracking-widest uppercase">
-              {artwork.availableOnPrint ? 'Prints Available' : 'Original'}
+          <div className="absolute inset-0 hidden items-center justify-center bg-gray-100 p-6 text-center">
+            <div>
+              <div className="font-display text-xl font-semibold">{artwork.title}</div>
+              <div className="label mt-2">Image not available</div>
             </div>
           </div>
         </div>
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
       </div>
-    </div>
+
+      {/* Wall label */}
+      <div className="mt-5 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="font-display text-xl font-semibold leading-tight">{artwork.title}</h3>
+          <p className="label mt-2">
+            {[artwork.medium, artwork.year].filter(Boolean).join(', ')}
+          </p>
+          <p className="label">{artwork.dimensions}</p>
+          {artwork.availableOnPrint && artwork.printSizes.length > 0 && (
+            <p className="label mt-2 !text-ink">
+              Prints: {artwork.printSizes
+                .map(({ size, price }) => `${size.charAt(0).toUpperCase() + size.slice(1)} £${price}`)
+                .join(' · ')}
+            </p>
+          )}
+        </div>
+        <span className="label flex shrink-0 items-center gap-2 pt-1">
+          {artwork.sold && <span className="sold-dot" aria-hidden />}
+          {getStatusLabel()}
+        </span>
+      </div>
+    </button>
   );
 };
 

@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, Shield } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import { handleApiError } from '../../../utils/errorHandler';
+import type { TypedApiError } from '../../../types/error';
 
 interface LoginFormData {
   email: string;
@@ -16,7 +19,6 @@ const AdminLogin: React.FC = () => {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const { login, isLoginLoading, loginError, isAuthenticated } = useAuth();
   const router = useRouter();
@@ -36,141 +38,112 @@ const AdminLogin: React.FC = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
 
-    try {
-      await login({
-        email: formData.email,
-        password: formData.password,
-      });
-    } catch (error) {
-      // Error handling is done in the useAuth hook
-      console.error('Login failed:', error);
-    }
+    // Errors are reported by the useAuth hook
+    login({
+      email: formData.email,
+      password: formData.password,
+    });
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const fieldClass =
+    'w-full border border-rule bg-white px-4 py-3 text-ink placeholder:text-gray-400 focus:border-ink focus:outline-none';
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-      
-      <div className="relative w-full max-w-md">
-        {/* Main Login Card */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-800 rounded-full mb-4">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-700 mb-2">Admin Portal</h1>
-            <p className="text-gray-500">Sign in to access the dashboard</p>
-          </div>
+    <div className="grid min-h-screen bg-wall lg:grid-cols-2">
+      {/* Brand panel */}
+      <div className="hidden flex-col justify-between bg-charcoal p-12 text-mat lg:flex">
+        <Link href="/" className="font-display text-xl font-semibold">
+          Joshua Otuonye
+        </Link>
+        <div>
+          <p className="label mb-4 !text-mat/50">Studio admin</p>
+          <p className="max-w-sm font-display text-4xl font-semibold leading-tight">
+            Manage the work, the shows and the messages in one place.
+          </p>
+        </div>
+        <Link href="/" className="label !text-mat/50 hover:!text-mat">
+          Back to the public site
+        </Link>
+      </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Email Address
+      {/* Form */}
+      <div className="flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm">
+          <p className="label mb-4 lg:hidden">Studio admin</p>
+          <h1 className="text-4xl font-semibold">Sign in</h1>
+          <p className="mt-3 text-lead">Use your admin account to continue.</p>
+
+          <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+            <div>
+              <label htmlFor="email" className="label mb-2 block">
+                Email
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-gray-500 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
-                  placeholder="admin@example.com"
-                  required
-                />
-              </div>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={fieldClass}
+                placeholder="you@example.com"
+                required
+              />
             </div>
 
-            {/* Password Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+            <div>
+              <label htmlFor="password" className="label mb-2 block">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-700" />
                 <input
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   name="password"
+                  autoComplete="current-password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-12 py-3 bg-white/10 border border-gray-500 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200"
-                  placeholder="••••••••"
+                  className={`${fieldClass} pr-12`}
+                  placeholder="Your password"
                   required
                 />
                 <button
                   type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-500 transition-colors"
+                  onClick={() => setShowPassword((show) => !show)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-lead hover:text-ink"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-gray-600 bg-white/10 border-white/20 rounded focus:ring-gray-500 focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-300">Remember me</span>
-              </label>
-            </div>
-
-            {/* Error Message */}
             {loginError && (
-              <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
-                <p className="text-red-200 text-sm">
-                  {loginError instanceof Error ? loginError.message : 'Login failed. Please try again.'}
-                </p>
-              </div>
+              <p className="border border-dot/40 bg-dot/5 p-3 text-sm text-dot" role="alert">
+                {handleApiError(loginError as TypedApiError)}
+              </p>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoginLoading || !formData.email || !formData.password}
-              className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="flex w-full items-center justify-center gap-2 bg-ink px-4 py-3.5 text-sm font-medium text-mat transition-colors hover:bg-lead disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoginLoading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Signing in...</span>
-                </div>
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-mat/40 border-t-mat" />
+                  Signing in…
+                </>
               ) : (
-                'Sign In'
+                'Sign in'
               )}
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-400 text-sm">
-              Protected by enterprise-grade security
-            </p>
-          </div>
         </div>
-
-        {/* Bottom Decoration */}
-        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gray-900 rounded-full"></div>
       </div>
     </div>
   );

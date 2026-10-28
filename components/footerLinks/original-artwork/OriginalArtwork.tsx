@@ -1,555 +1,326 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {  Grid, List, Search, ShoppingCart, Eye, Heart, Tag, Palette, Award, ArrowRight } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { Grid, List, Search } from 'lucide-react';
+import Reveal from '../../shared/Reveal';
+import PageHeader from '../../shared/PageHeader';
+import { useArtworks } from '../../../hooks/useArtwork';
+import { ArtworkModal, type Artwork } from '../../work/ArtworkDetail';
 
-interface Artwork {
-  id: number;
-  title: string;
-  image: string;
-  price: number;
-  size: string;
-  medium: string;
-  year: number;
-  category: string;
-  description: string;
-  available: boolean;
-  featured?: boolean;
-}
+const categoryLabels: Record<string, string> = {
+  portraits: 'Portraits',
+  landscapes: 'Landscapes',
+  'still-life': 'Still life',
+  sketches: 'Sketches',
+};
 
-interface Category {
-  name: string;
-  count: number;
-  description: string;
-}
+const priceOf = (artwork: Artwork) => {
+  const value = parseFloat(artwork.price ?? '');
+  return Number.isNaN(value) ? null : value;
+};
+
+const formatPrice = (artwork: Artwork) => {
+  const value = priceOf(artwork);
+  return value === null ? 'Price on request' : `£${value.toLocaleString('en-GB')}`;
+};
 
 const OriginalArtworkPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [searchTerm, setSearchTerm] = useState('');
-  const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
+  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
 
-  const artworks: Artwork[] = [
-    {
-      id: 1,
-      title: "Morning Light",
-      image: "/api/placeholder/400/500",
-      price: 850,
-      size: "16\" x 20\"",
-      medium: "Graphite on paper",
-      year: 2024,
-      category: "landscapes",
-      description: "A serene landscape capturing the first light of dawn breaking through ancient oak trees.",
-      available: true,
-      featured: true
-    },
-    {
-      id: 2,
-      title: "The Thinker",
-      image: "/api/placeholder/400/500",
-      price: 1200,
-      size: "18\" x 24\"",
-      medium: "Charcoal and graphite",
-      year: 2024,
-      category: "portraits",
-      description: "A contemplative portrait study exploring the depths of human expression and emotion.",
-      available: true
-    },
-    {
-      id: 3,
-      title: "Victorian Rose",
-      image: "/api/placeholder/400/500",
-      price: 650,
-      size: "12\" x 16\"",
-      medium: "Detailed graphite",
-      year: 2024,
-      category: "still-life",
-      description: "An intricate study of a single rose, showcasing delicate petal textures and subtle shadows.",
-      available: true
-    },
-    {
-      id: 4,
-      title: "Urban Solitude",
-      image: "/api/placeholder/400/500",
-      price: 1100,
-      size: "20\" x 24\"",
-      medium: "Charcoal on paper",
-      year: 2023,
-      category: "urban",
-      description: "A powerful urban scene capturing the isolation and beauty of city life.",
-      available: false
-    },
-    {
-      id: 5,
-      title: "Ancient Hands",
-      image: "/api/placeholder/400/500",
-      price: 750,
-      size: "14\" x 18\"",
-      medium: "Graphite study",
-      year: 2024,
-      category: "studies",
-      description: "A detailed study of weathered hands, telling stories through every line and wrinkle.",
-      available: true,
-      featured: true
-    },
-    {
-      id: 6,
-      title: "Misty Harbor",
-      image: "/api/placeholder/400/500",
-      price: 950,
-      size: "18\" x 24\"",
-      medium: "Mixed graphite",
-      year: 2023,
-      category: "landscapes",
-      description: "A moody harbor scene with boats emerging from morning mist.",
-      available: true
-    },
-    {
-      id: 7,
-      title: "Classical Drapery",
-      image: "/api/placeholder/400/500",
-      price: 580,
-      size: "11\" x 14\"",
-      medium: "Charcoal study",
-      year: 2024,
-      category: "studies",
-      description: "A classical study of flowing fabric, exploring light, shadow, and form.",
-      available: true
-    },
-    {
-      id: 8,
-      title: "City Rain",
-      image: "/api/placeholder/400/500",
-      price: 1300,
-      size: "20\" x 30\"",
-      medium: "Charcoal and graphite",
-      year: 2023,
-      category: "urban",
-      description: "An atmospheric urban scene with rain-soaked streets and reflected city lights.",
-      available: true,
-      featured: true
-    }
-  ];
+  // Everything in the portfolio that has not been sold is an available original
+  const { data, isLoading, isError } = useArtworks({ sold: false, limit: 200 });
 
-  const categories: Category[] = [
-    { name: 'all', count: artworks.length, description: 'All available artwork' },
-    { name: 'landscapes', count: artworks.filter(a => a.category === 'landscapes').length, description: 'Natural scenes and environments' },
-    { name: 'portraits', count: artworks.filter(a => a.category === 'portraits').length, description: 'Human expression and character studies' },
-    { name: 'still-life', count: artworks.filter(a => a.category === 'still-life').length, description: 'Objects and botanical studies' },
-    { name: 'urban', count: artworks.filter(a => a.category === 'urban').length, description: 'City scenes and architecture' },
-    { name: 'studies', count: artworks.filter(a => a.category === 'studies').length, description: 'Technical and practice studies' }
-  ];
+  const available: Artwork[] = useMemo(
+    () =>
+      (data?.artworks ?? []).map(
+        (artwork: any) =>
+          ({
+            ...artwork,
+            tags: artwork.tags ?? [],
+            images: artwork.images ?? [],
+            primaryImage: artwork.primaryImage ?? undefined,
+            printSizes: artwork.printSizes ?? [],
+          }) as Artwork
+      ),
+    [data]
+  );
 
-  const featuredArtworks = artworks.filter(artwork => artwork.featured);
+  const categories = useMemo(() => {
+    const present = Array.from(new Set(available.map((a) => a.category)));
+    return [
+      { id: 'all', name: 'All', count: available.length },
+      ...present.map((id) => ({
+        id,
+        name: categoryLabels[id] ?? id,
+        count: available.filter((a) => a.category === id).length,
+      })),
+    ];
+  }, [available]);
 
-  const filteredArtworks = artworks
-    .filter(artwork => {
-      const matchesCategory = selectedCategory === 'all' || artwork.category === selectedCategory;
-      const matchesSearch = artwork.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           artwork.description.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low': return a.price - b.price;
-        case 'price-high': return b.price - a.price;
-        case 'oldest': return a.year - b.year;
-        case 'newest':
-        default: return b.year - a.year;
-      }
-    });
-
-  useEffect(() => {
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setVisibleElements(prev => new Set(prev).add(entry.target.id));
+  const filtered = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return available
+      .filter((artwork) => {
+        const matchesCategory = selectedCategory === 'all' || artwork.category === selectedCategory;
+        const matchesSearch =
+          !term ||
+          artwork.title.toLowerCase().includes(term) ||
+          artwork.description.toLowerCase().includes(term);
+        return matchesCategory && matchesSearch;
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'price-low':
+            return (priceOf(a) ?? Infinity) - (priceOf(b) ?? Infinity);
+          case 'price-high':
+            return (priceOf(b) ?? -Infinity) - (priceOf(a) ?? -Infinity);
+          case 'oldest':
+            return a.year - b.year;
+          case 'newest':
+          default:
+            return b.year - a.year;
         }
       });
-    };
+  }, [available, selectedCategory, searchTerm, sortBy]);
 
-    const observer = new IntersectionObserver(observerCallback, {
-      threshold: 0.1,
-      rootMargin: '-20px'
-    });
+  const navigate = (direction: 'next' | 'prev') => {
+    if (!selectedArtwork || filtered.length === 0) return;
+    const index = filtered.findIndex((a) => a.id === selectedArtwork.id);
+    const next =
+      direction === 'next'
+        ? (index + 1) % filtered.length
+        : index <= 0
+          ? filtered.length - 1
+          : index - 1;
+    setSelectedArtwork(filtered[next]);
+  };
 
-    const elementsToObserve = document.querySelectorAll('[data-animate]');
-    elementsToObserve.forEach(el => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, []);
-
-  const formatPrice = (price: number) => `£${price.toLocaleString()}`;
+  const imageFor = (artwork: Artwork) => artwork.primaryImage?.url || artwork.images?.[0]?.url || null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Hero Section */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-32">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-6">
-              <Palette className="w-8 h-8 text-gray-700" />
-              <span className="text-sm font-medium text-gray-600 uppercase tracking-wide">Original Artwork</span>
+    <div className="min-h-screen">
+      <PageHeader
+        eyebrow="Original artwork"
+        title="Available originals"
+        intro="One-of-a-kind pencil and charcoal artworks, each an original drawing ready to find a wall."
+      />
+
+      {/* Controls */}
+      <div className="border-b border-rule">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-5 lg:px-10">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-x-7 gap-y-2" role="tablist" aria-label="Filter by category">
+              {categories.map((category) => {
+                const active = selectedCategory === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`border-b px-1 py-1.5 text-sm transition-colors ${
+                      active ? 'border-ink text-ink' : 'border-transparent text-lead hover:text-ink'
+                    }`}
+                  >
+                    {category.name}
+                    <span className="label ml-1.5">{category.count}</span>
+                  </button>
+                );
+              })}
             </div>
-            <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-6">
-              Available Originals
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Discover unique, one-of-a-kind pencil and charcoal artworks available for immediate purchase. 
-              Each piece is an original creation, meticulously crafted and ready to find its perfect home.
-            </p>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="relative">
+                <span className="sr-only">Search originals</span>
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search"
+                  className="w-44 border border-rule bg-white py-2 pl-9 pr-3 text-sm focus:border-ink focus:outline-none"
+                />
+              </label>
+
+              <label>
+                <span className="sr-only">Sort by</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="border border-rule bg-white px-3 py-2 text-sm focus:border-ink focus:outline-none"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="price-low">Price: low to high</option>
+                  <option value="price-high">Price: high to low</option>
+                </select>
+              </label>
+
+              <div className="flex border border-rule">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  aria-label="Gallery view"
+                  aria-pressed={viewMode === 'grid'}
+                  className={`p-2.5 transition-colors ${viewMode === 'grid' ? 'bg-ink text-mat' : 'text-lead hover:text-ink'}`}
+                >
+                  <Grid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  aria-label="List view"
+                  aria-pressed={viewMode === 'list'}
+                  className={`p-2.5 transition-colors ${viewMode === 'list' ? 'bg-ink text-mat' : 'text-lead hover:text-ink'}`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Featured Artworks */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div
-            id="featured"
-            data-animate
-            className={`text-center mb-16 transition-all duration-700 ${
-              visibleElements.has('featured')
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-8'
-            }`}
-          >
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <Award className="w-6 h-6 text-yellow-600" />
-              <h2 className="text-4xl font-light text-gray-900">Featured Originals</h2>
-            </div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Handpicked pieces that showcase the range and depth of my artistic practice.
-            </p>
-          </div>
+      {/* Works */}
+      <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
+        {isLoading && <p className="label py-16 text-center" role="status">Loading originals…</p>}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredArtworks.map((artwork, index) => (
-              <div
-                key={artwork.id}
-                data-animate
-                id={`featured-${artwork.id}`}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 ${
-                  visibleElements.has(`featured-${artwork.id}`)
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                }`}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="aspect-[4/5] bg-gray-200 relative overflow-hidden group">
-                  <Image 
-                    src={artwork.image} 
-                    alt={artwork.title}
-                    width={500}
-                    height={500}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-3">
-                      <button className="bg-white text-gray-900 p-3 rounded-full hover:bg-gray-100 transition-colors">
-                        <Eye className="w-5 h-5" />
-                      </button>
-                      <button className="bg-white text-gray-900 p-3 rounded-full hover:bg-gray-100 transition-colors">
-                        <Heart className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-medium">
-                      Featured
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{artwork.title}</h3>
-                  <p className="text-gray-600 text-sm mb-3">{artwork.description}</p>
-                  <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
-                    <span>{artwork.size}</span>
-                    <span>{artwork.medium}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-semibold text-gray-900">{formatPrice(artwork.price)}</span>
-                    <button className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center space-x-2">
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>Purchase</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        {isError && (
+          <p className="border border-rule px-6 py-16 text-center text-lead">
+            The originals could not be loaded. Refresh the page to try again.
+          </p>
+        )}
 
-      {/* Filters and Gallery */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          {/* Search and Filters */}
-          <div className="mb-12">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-              {/* Search */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search artworks..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
-              </div>
+        {!isLoading && !isError && available.length === 0 && (
+          <p className="border border-rule px-6 py-16 text-center text-lead">
+            There are no originals available right now. You can still{' '}
+            <Link href="/portraits-commission" className="text-ink underline underline-offset-4">commission a portrait</Link>{' '}
+            or <Link href="/contact" className="text-ink underline underline-offset-4">get in touch</Link>.
+          </p>
+        )}
 
-              {/* Sort and View Controls */}
-              <div className="flex items-center space-x-4">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
+        {!isLoading && !isError && available.length > 0 && filtered.length === 0 && (
+          <p className="border border-rule px-6 py-16 text-center text-lead">
+            No originals match your search. Clear it, or choose All.
+          </p>
+        )}
 
-                <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+        {viewMode === 'grid' ? (
+          <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((artwork, index) => {
+              const imageUrl = imageFor(artwork);
+              return (
+                <Reveal key={artwork.id} delay={(index % 3) * 90}>
                   <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 ${
-                      viewMode === 'grid'
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-white text-gray-400 hover:text-gray-600'
-                    } transition-colors`}
+                    type="button"
+                    onClick={() => setSelectedArtwork(artwork)}
+                    className="group block w-full text-left"
+                    aria-label={`View ${artwork.title}`}
                   >
-                    <Grid className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 ${
-                      viewMode === 'list'
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-white text-gray-400 hover:text-gray-600'
-                    } transition-colors`}
-                  >
-                    <List className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Category Filters */}
-            <div className="flex flex-wrap gap-3">
-              {categories.map((category) => (
-                <button
-                  key={category.name}
-                  onClick={() => setSelectedCategory(category.name)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    selectedCategory === category.name
-                      ? 'bg-gray-900 text-white shadow-lg'
-                      : 'bg-white text-gray-600 border border-gray-300 hover:border-gray-400 hover:shadow-md'
-                  }`}
-                >
-                  {category.name === 'all' ? 'All' : category.name.charAt(0).toUpperCase() + category.name.slice(1)}
-                  <span className="ml-2 text-xs opacity-75">({category.count})</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Results Count */}
-          <div className="mb-8">
-            <p className="text-gray-600">
-              Showing {filteredArtworks.length} of {artworks.length} artworks
-              {searchTerm && ` for "${searchTerm}"`}
-            </p>
-          </div>
-
-          {/* Gallery Grid */}
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredArtworks.map((artwork, index) => (
-                <div
-                  key={artwork.id}
-                  data-animate
-                  id={`artwork-${artwork.id}`}
-                  className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 ${
-                    visibleElements.has(`artwork-${artwork.id}`)
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="aspect-[4/5] bg-gray-200 relative overflow-hidden group">
-                    <Image
-                      src={artwork.image} 
-                      alt={artwork.title}
-                      height={500}
-                      width={500}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-2">
-                        <button className="bg-white text-gray-900 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="bg-white text-gray-900 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                          <Heart className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    {!artwork.available && (
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                          Sold
-                        </span>
-                      </div>
-                    )}
-                    {artwork.featured && artwork.available && (
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-medium">
-                          Featured
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{artwork.title}</h3>
-                    <p className="text-gray-600 text-sm mb-2 line-clamp-2">{artwork.description}</p>
-                    <div className="flex justify-between items-center text-xs text-gray-500 mb-3">
-                      <span>{artwork.size}</span>
-                      <span>{artwork.year}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-semibold text-gray-900">{formatPrice(artwork.price)}</span>
-                      {artwork.available ? (
-                        <button className="bg-gray-900 text-white px-3 py-1 rounded-md hover:bg-gray-800 transition-colors text-sm flex items-center space-x-1">
-                          <ShoppingCart className="w-3 h-3" />
-                          <span>Buy</span>
-                        </button>
+                    <div className="hung transition-transform duration-500 group-hover:-translate-y-1">
+                      {imageUrl ? (
+                        <Image
+                          src={imageUrl}
+                          alt={artwork.primaryImage?.alt || artwork.title}
+                          width={600}
+                          height={750}
+                          className="block aspect-[4/5] w-full object-cover"
+                          loading="lazy"
+                        />
                       ) : (
-                        <span className="text-red-500 text-sm font-medium">Sold Out</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* List View */
-            <div className="space-y-6">
-              {filteredArtworks.map((artwork, index) => (
-                <div
-                  key={artwork.id}
-                  data-animate
-                  id={`list-artwork-${artwork.id}`}
-                  className={`bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 ${
-                    visibleElements.has(`list-artwork-${artwork.id}`)
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex flex-col md:flex-row">
-                    <div className="md:w-64 aspect-[4/5] md:aspect-square bg-gray-200 relative overflow-hidden group">
-                      <Image
-                        src={artwork.image} 
-                        alt={artwork.title}
-                        width={500}
-                        height={500}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      {!artwork.available && (
-                        <div className="absolute top-4 left-4">
-                          <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                            Sold
-                          </span>
-                        </div>
-                      )}
-                      {artwork.featured && artwork.available && (
-                        <div className="absolute top-4 left-4">
-                          <span className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-medium">
-                            Featured
-                          </span>
+                        <div className="flex aspect-[4/5] items-center justify-center bg-gray-100 p-6 text-center text-lead">
+                          {artwork.title}
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-2xl font-semibold text-gray-900 mb-2">{artwork.title}</h3>
-                          <p className="text-gray-600 mb-4">{artwork.description}</p>
-                        </div>
-                        <div className="flex space-x-2 ml-4">
-                          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                            <Eye className="w-5 h-5" />
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                            <Heart className="w-5 h-5" />
-                          </button>
-                        </div>
+                    <div className="mt-5 flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <h3 className="font-display text-xl font-semibold leading-tight">{artwork.title}</h3>
+                        <p className="label mt-2">{artwork.medium}, {artwork.year}</p>
+                        <p className="label">{artwork.dimensions}</p>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-sm">
-                        <div>
-                          <span className="text-gray-500">Size:</span>
-                          <p className="font-medium text-gray-900">{artwork.size}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Medium:</span>
-                          <p className="font-medium text-gray-900">{artwork.medium}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Year:</span>
-                          <p className="font-medium text-gray-900">{artwork.year}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Category:</span>
-                          <p className="font-medium text-gray-900 capitalize">{artwork.category}</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-3xl font-semibold text-gray-900">{formatPrice(artwork.price)}</span>
-                        {artwork.available ? (
-                          <button className="bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors flex items-center space-x-2">
-                            <ShoppingCart className="w-4 h-4" />
-                            <span>Purchase Original</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </button>
-                        ) : (
-                          <span className="text-red-500 text-lg font-medium">Sold Out</span>
-                        )}
-                      </div>
+                      <span className="label !text-ink pt-1">{formatPrice(artwork)}</span>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                  </button>
+                </Reveal>
+              );
+            })}
+          </div>
+        ) : (
+          <ul className="divide-y divide-rule border-y border-rule">
+            {filtered.map((artwork) => {
+              const imageUrl = imageFor(artwork);
+              return (
+                <li key={artwork.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedArtwork(artwork)}
+                    className="group grid w-full gap-6 py-8 text-left sm:grid-cols-[9rem_1fr] md:grid-cols-[12rem_1fr_auto] md:gap-10"
+                    aria-label={`View ${artwork.title}`}
+                  >
+                    <div className="hung">
+                      {imageUrl ? (
+                        <Image
+                          src={imageUrl}
+                          alt={artwork.primaryImage?.alt || artwork.title}
+                          width={300}
+                          height={375}
+                          className="block aspect-[4/5] w-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="flex aspect-[4/5] items-center justify-center bg-gray-100 text-center text-sm text-lead">
+                          {artwork.title}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-display text-2xl font-semibold transition-colors group-hover:text-lead md:text-3xl">
+                        {artwork.title}
+                      </h3>
+                      <p className="label mt-3">
+                        {artwork.medium} · {artwork.dimensions} · {artwork.year}
+                      </p>
+                      <p className="mt-4 line-clamp-3 max-w-xl text-lead">{artwork.description}</p>
+                    </div>
+                    <div className="label !text-ink sm:col-start-2 md:col-start-auto md:text-right">
+                      {formatPrice(artwork)}
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
-          {/* No Results */}
-          {filteredArtworks.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mb-4">
-                <Tag className="w-12 h-12 text-gray-400 mx-auto" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No artworks found</h3>
-              <p className="text-gray-600 mb-4">
-                Try adjusting your search terms or category filters.
-              </p>
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('all');
-                }}
-                className="text-gray-900 hover:text-gray-700 font-medium"
-              >
-                Clear all filters
-              </button>
-            </div>
-          )}
+      {/* Closing call */}
+      <section className="bg-charcoal py-20 text-mat">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-6 sm:flex-row sm:items-center lg:px-10">
+          <h2 className="max-w-lg text-3xl font-semibold sm:text-4xl">Looking for something made for you?</h2>
+          <Link
+            href="/contact?type=commission"
+            className="bg-mat px-7 py-3.5 text-sm font-medium text-ink transition-colors hover:bg-white"
+          >
+            Start a commission
+          </Link>
         </div>
       </section>
+
+      {selectedArtwork && (
+        <ArtworkModal
+          artwork={selectedArtwork}
+          isOpen
+          onClose={() => setSelectedArtwork(null)}
+          onNext={() => navigate('next')}
+          onPrev={() => navigate('prev')}
+        />
+      )}
     </div>
   );
 };

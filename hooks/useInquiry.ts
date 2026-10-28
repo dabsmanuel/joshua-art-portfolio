@@ -1,13 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inquiryService, BulkActionPayload, UpdateStatusPayload, AddNotePayload } from '../services/inquiriesService';
 import { InquiryInput, InquiryResponse, InquiriesResponse } from '../types/inquiry';
+import { toast } from 'react-hot-toast';
+import { handleApiError } from '../utils/errorHandler';
+import type { TypedApiError } from '../types/error';
 
 // Query keys for cache management
 const INQUIRY_KEYS = {
   all: ['inquiries'] as const,
   single: (inquiryId: string) => ['inquiry', inquiryId] as const,
   stats: ['inquiries', 'stats'] as const,
-  filtered: (filters: Record<string, any>) => ['inquiries', 'filtered', filters] as const,
+  filtered: (filters: Record<string, unknown>) => ['inquiries', 'filtered', filters] as const,
 };
 
 // Hook to create a new inquiry
@@ -16,7 +19,7 @@ export const useCreateInquiry = () => {
 
   return useMutation<InquiryResponse, Error, InquiryInput>({
     mutationFn: inquiryService.createInquiry,
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.stats });
     },
@@ -64,9 +67,11 @@ export const useUpdateInquiryStatus = () => {
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.all });
       // Update stats
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.stats });
+      toast.success('Inquiry status updated');
     },
     onError: (error) => {
       console.error('Error updating inquiry status:', error);
+      toast.error(handleApiError(error as TypedApiError));
     },
   });
 };
@@ -80,9 +85,11 @@ export const useAddInquiryNote = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.single(variables.inquiryId) });
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.all });
+      toast.success('Note saved');
     },
     onError: (error) => {
       console.error('Error adding inquiry note:', error);
+      toast.error(handleApiError(error as TypedApiError));
     },
   });
 };
@@ -100,9 +107,11 @@ export const useDeleteInquiry = () => {
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.all });
       // Update stats
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.stats });
+      toast.success('Inquiry deleted');
     },
     onError: (error) => {
       console.error('Error deleting inquiry:', error);
+      toast.error(handleApiError(error as TypedApiError));
     },
   });
 };
@@ -111,15 +120,17 @@ export const useDeleteInquiry = () => {
 export const useBulkInquiryAction = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<any, Error, BulkActionPayload>({
+  return useMutation<{ message: string; affected: number; result: unknown }, Error, BulkActionPayload>({
     mutationFn: (payload: BulkActionPayload) => inquiryService.bulkAction(payload),
     onSuccess: () => {
       // Invalidate all inquiry-related queries
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.all });
       queryClient.invalidateQueries({ queryKey: INQUIRY_KEYS.stats });
+      toast.success('Bulk action completed');
     },
     onError: (error) => {
       console.error('Error performing bulk action:', error);
+      toast.error(handleApiError(error as TypedApiError));
     },
   });
 };
@@ -151,6 +162,7 @@ export const useExportInquiries = () => {
     },
     onError: (error) => {
       console.error('Error exporting inquiries:', error);
+      toast.error(handleApiError(error as TypedApiError));
     },
   });
 };

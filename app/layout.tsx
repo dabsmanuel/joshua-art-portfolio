@@ -1,30 +1,31 @@
 import type { Metadata } from "next";
-import { Inter, Crimson_Text, Poppins } from "next/font/google";
+import { Syne, Instrument_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/providers/QueryCLient";
 import Header from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer/Footer";
 import { Toaster } from "react-hot-toast";
 
-// Modern, clean sans-serif for UI elements and body text
-const inter = Inter({
-  variable: "--font-inter",
+// Wide, slightly eccentric display face for names and titles
+const syne = Syne({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+// Quiet humanist sans for reading
+const instrumentSans = Instrument_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
 });
 
-// Elegant serif for headings and artistic content
-const crimsonText = Crimson_Text({
-  variable: "--font-crimson",
+// Typewriter-style mono for wall labels and catalogue details
+const dmMono = DM_Mono({
+  variable: "--font-label",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-});
-
-const poppinsText = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -41,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${crimsonText.variable} ${poppinsText.variable} antialiased font-sans`}
+        className={`${syne.variable} ${instrumentSans.variable} ${dmMono.variable} antialiased`}
       >
         <Providers>
           <Header isScrolled={true} />
