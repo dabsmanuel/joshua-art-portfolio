@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Reveal from '../shared/Reveal';
 import PageHeader from '../shared/PageHeader';
 import { ArtworkModal, StatusLabel, cleanTag, type Artwork } from './ArtworkDetail';
+import { getOptimizedImageUrl } from '@/utils/image';
 
 const categoryList = [
   { id: 'all', name: 'All work' },
@@ -96,10 +97,10 @@ const WorkPage: React.FC = () => {
 
   const getPrimaryImage = (artwork: Artwork): string | null => {
     if (artwork.primaryImage?.url) {
-      return artwork.primaryImage.url;
+      return getOptimizedImageUrl(artwork.primaryImage.url);
     }
     if (artwork.images && artwork.images.length > 0) {
-      return artwork.images[0].url;
+      return getOptimizedImageUrl(artwork.images[0].url);
     }
     return null;
   };
@@ -223,19 +224,29 @@ const WorkPage: React.FC = () => {
                   >
                     <div className="hung transition-transform duration-500 group-hover:-translate-y-1">
                       {imageUrl ? (
-                        <Image
-                          src={imageUrl}
-                          alt={imageAlt}
-                          height={750}
-                          width={600}
-                          className="block h-auto w-full"
-                          loading="lazy"
-                          onError={(e) => {
-                            console.error(`Image failed to load for ${artwork.title}: ${imageUrl}`);
-                            const target = e.target as HTMLImageElement;
-                            target.classList.add('hidden');
-                          }}
-                        />
+                        <>
+                          <Image
+                            src={imageUrl}
+                            alt={imageAlt}
+                            height={750}
+                            width={600}
+                            className="block h-auto w-full"
+                            loading="lazy"
+                            onError={(e) => {
+                              console.error(`Image failed to load for ${artwork.title}: ${imageUrl}`);
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement | null;
+                              if (fallback) {
+                                fallback.classList.remove('hidden');
+                                fallback.classList.add('flex');
+                              }
+                            }}
+                          />
+                          <div className="hidden aspect-[4/5] items-center justify-center bg-gray-100 p-6 text-center font-display text-lg text-lead">
+                            {artwork.title}
+                          </div>
+                        </>
                       ) : (
                         <div className="flex aspect-[4/5] items-center justify-center bg-gray-100 p-6 text-center font-display text-lg text-lead">
                           {artwork.title}
@@ -284,18 +295,29 @@ const WorkPage: React.FC = () => {
                   >
                     <div className="hung">
                       {imageUrl ? (
-                        <Image
-                          src={imageUrl}
-                          alt={imageAlt}
-                          width={300}
-                          height={375}
-                          className="block aspect-[4/5] w-full object-cover"
-                          loading="lazy"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
+                        <>
+                          <Image
+                            src={imageUrl}
+                            alt={imageAlt}
+                            width={300}
+                            height={375}
+                            className="block aspect-[4/5] w-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              console.error(`List image failed to load for ${artwork.title}: ${imageUrl}`);
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement | null;
+                              if (fallback) {
+                                fallback.classList.remove('hidden');
+                                fallback.classList.add('flex');
+                              }
+                            }}
+                          />
+                          <div className="hidden aspect-[4/5] items-center justify-center bg-gray-100 text-center text-sm text-lead">
+                            {artwork.title}
+                          </div>
+                        </>
                       ) : (
                         <div className="flex aspect-[4/5] items-center justify-center bg-gray-100 text-center text-sm text-lead">
                           {artwork.title}

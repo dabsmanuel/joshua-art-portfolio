@@ -1,5 +1,5 @@
 // hooks/useAuth.js
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '../services/authService';
 import { handleApiError } from '../utils/errorHandler';
@@ -16,6 +16,10 @@ interface UserAccount {
   phone?: string;
   role: string;
   createdAt?: string;
+}
+
+interface AuthUser extends UserAccount {
+  name: string;
 }
 
 // Query keys for cache management
@@ -204,13 +208,16 @@ export const useAuth = () => {
   const actuallyAuthenticated = !!currentUser && !userError && authService.hasTokens();
 
   // The API wraps the account as { user }. Unwrap it and add a display name.
-  const account = (currentUser as { user?: UserAccount } | undefined)?.user ?? null;
-  const user = account
-    ? {
-        ...account,
-        name: [account.firstName, account.lastName].filter(Boolean).join(' ') || account.username || '',
-      }
-    : null;
+  // Memoized so `user` keeps the same reference between renders; consumers that
+  // use it in a useEffect dependency array would otherwise loop forever.
+  const user = useMemo<AuthUser | null>(() => {
+    const account = (currentUser as { user?: UserAccount } | null | undefined)?.user ?? null;
+    if (!account) return null;
+    return {
+      ...account,
+      name: [account.firstName, account.lastName].filter(Boolean).join(' ') || account.username || '',
+    };
+  }, [currentUser]);
 
   return {
     // User data

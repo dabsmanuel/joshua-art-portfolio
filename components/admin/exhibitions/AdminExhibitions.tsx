@@ -265,7 +265,7 @@ const AdminExhibitions: React.FC = () => {
               <li key={exhibition.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col sm:flex-row">
                 <div className="relative sm:w-44 h-40 sm:h-auto bg-gray-100 shrink-0">
                   {exhibition.image ? (
-                    <Image src={exhibition.image.url} alt={exhibition.title} fill className="object-cover" sizes="176px" />
+                    <Image src={exhibition.image.url} alt={exhibition.title} fill className="object-cover" sizes="176px" loading="eager" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-sm text-gray-400">No image</div>
                   )}

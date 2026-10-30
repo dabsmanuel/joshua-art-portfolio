@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     // Artwork and exhibition images are served from Cloudinary
     remotePatterns: [{ protocol: 'https', hostname: 'res.cloudinary.com' }],
+    unoptimized: true,
   },
 };
 

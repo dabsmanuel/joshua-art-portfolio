@@ -1,3 +1,5 @@
+'use client';
+
 import AdminLayout from "@/components/admin/AdminLayout"
 import AdminArtworks from "@/components/admin/artworks/AdminArtworks"
 
