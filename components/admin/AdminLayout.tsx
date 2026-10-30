@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import { useInquiryStats } from '../../hooks/useInquiry';
@@ -44,6 +44,9 @@ const menuItems: MenuItem[] = [
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  // Defer client-only auth checks until after first paint so the server
+  // and client start with identical HTML (no loading spinner on the server).
+  const [mounted, setMounted] = useState(false);
   const { user, isAuthenticated, logout, isLogoutLoading, isLoading } = useAuth();
   const { data: inquiryStats } = useInquiryStats();
   const pendingInquiries = inquiryStats?.stats?.byStatus?.pending ?? 0;
@@ -52,10 +55,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isLoading && !isAuthenticated) {
       router.push('/admin/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, mounted, router]);
 
   const isMenuItemActive = (item: MenuItem): boolean =>
     pathname === item.href || pathname.startsWith(item.href + '/');
@@ -98,7 +105,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
     };
   }, [sidebarOpen]);
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-wall" role="status">
         <div className="text-center">

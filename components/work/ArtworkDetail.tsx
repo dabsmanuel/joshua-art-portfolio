@@ -5,6 +5,7 @@ import { X, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useCreateInquiry } from '@/hooks/useInquiry';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
+import { getOptimizedImageUrl } from '@/utils/image';
 
 export interface ArtworkImage {
   url: string;
@@ -115,10 +116,10 @@ export const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onC
 
   const getPrimaryImage = (artwork: Artwork): string | null => {
     if (artwork.primaryImage?.url) {
-      return artwork.primaryImage.url;
+      return getOptimizedImageUrl(artwork.primaryImage.url);
     }
     if (artwork.images && artwork.images.length > 0) {
-      return artwork.images[0].url;
+      return getOptimizedImageUrl(artwork.images[0].url);
     }
     return null;
   };
@@ -167,8 +168,13 @@ export const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onC
                         console.error(`Modal image failed to load for ${artwork.title}: ${imageUrl}`);
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement | null;
+                        if (fallback) {
+                          fallback.classList.remove('hidden');
+                        }
                       }}
                     />
+                    <div className="hidden py-24 font-display text-2xl text-lead">{artwork.title}</div>
                   </div>
                 ) : (
                   <div className="py-24 font-display text-2xl text-lead">{artwork.title}</div>

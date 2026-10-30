@@ -5,6 +5,7 @@ import { X, ZoomIn } from 'lucide-react';
 import ImageZoomModal from './ImageZoom';
 import Image from 'next/image';
 import { ArtworkResponse } from '@/types/artwork';
+import { getOptimizedImageUrl } from '@/utils/image';
 
 interface ArtworkModalProps {
   artwork: ArtworkResponse;
@@ -25,7 +26,8 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, onClose }) => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose, showImageZoom]);
 
-  const imageUrl = artwork.primaryImage?.url || artwork.images?.[0]?.url || '';
+  const rawImageUrl = artwork.primaryImage?.url || artwork.images?.[0]?.url || '';
+  const imageUrl = getOptimizedImageUrl(rawImageUrl);
   const imageAlt = artwork.primaryImage?.alt || artwork.images?.[0]?.alt || artwork.title;
 
   const handleImageClick = () => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArtworkResponse } from '@/types/artwork';
 import Image from 'next/image';
+import { getOptimizedImageUrl } from '@/utils/image';
 
 interface ArtworkCardProps {
   artwork: ArtworkResponse;
@@ -12,7 +13,8 @@ interface ArtworkCardProps {
 // A work on the wall with its museum label underneath.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, isVisible, delay, onClick }) => {
-  const imageUrl = artwork.primaryImage?.url || artwork.images?.[0]?.url || '';
+  const rawImageUrl = artwork.primaryImage?.url || artwork.images?.[0]?.url || '';
+  const imageUrl = getOptimizedImageUrl(rawImageUrl);
   const imageAlt = artwork.primaryImage?.alt || artwork.images?.[0]?.alt || artwork.title;
 
   const getStatusLabel = () => {
