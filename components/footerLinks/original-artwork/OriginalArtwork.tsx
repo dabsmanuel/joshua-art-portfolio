@@ -10,6 +10,7 @@ import PageHeader from '../../shared/PageHeader';
 import { useArtworks } from '../../../hooks/useArtwork';
 import { ArtworkModal, type Artwork } from '../../work/ArtworkDetail';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 const categoryLabels: Record<string, string> = {
   portraits: 'Portraits',
   landscapes: 'Landscapes',
@@ -82,10 +83,11 @@ const OriginalArtworkPage: React.FC = () => {
           case 'price-high':
             return (priceOf(b) ?? -Infinity) - (priceOf(a) ?? -Infinity);
           case 'oldest':
-            return a.year - b.year;
+            return available.indexOf(b) - available.indexOf(a);
           case 'newest':
           default:
-            return b.year - a.year;
+            // the API returns newest uploads first
+            return available.indexOf(a) - available.indexOf(b);
         }
       });
   }, [available, selectedCategory, searchTerm, sortBy]);
@@ -225,6 +227,7 @@ const OriginalArtworkPage: React.FC = () => {
                     <div className="hung transition-transform duration-500 group-hover:-translate-y-1">
                       {imageUrl ? (
                         <Image
+                          loader={cloudinaryLoader}
                           src={imageUrl}
                           alt={artwork.primaryImage?.alt || artwork.title}
                           width={600}
@@ -266,6 +269,7 @@ const OriginalArtworkPage: React.FC = () => {
                     <div className="hung">
                       {imageUrl ? (
                         <Image
+                          loader={cloudinaryLoader}
                           src={imageUrl}
                           alt={artwork.primaryImage?.alt || artwork.title}
                           width={300}

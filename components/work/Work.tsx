@@ -4,12 +4,14 @@
 import React, { useState, useMemo } from 'react';
 import { Grid, List } from 'lucide-react';
 import { useArtworks } from '../../hooks/useArtwork';
+import { useColumnCount } from '../../hooks/useColumnCount';
 import Image from 'next/image';
 import Reveal from '../shared/Reveal';
 import PageHeader from '../shared/PageHeader';
 import { ArtworkModal, StatusLabel, cleanTag, type Artwork } from './ArtworkDetail';
 import { getOptimizedImageUrl } from '@/utils/image';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 const categoryList = [
   { id: 'all', name: 'All work' },
   { id: 'portraits', name: 'Portraits' },
@@ -60,6 +62,8 @@ const WorkPage: React.FC = () => {
         : allArtworks.filter((a) => a.category === category.id).length,
   }));
 
+  const columnCount = useColumnCount();
+
   const filteredArtworks = useMemo(
     () =>
       selectedCategory === 'all'
@@ -67,6 +71,35 @@ const WorkPage: React.FC = () => {
         : allArtworks.filter((a) => a.category === selectedCategory),
     [allArtworks, selectedCategory]
   );
+
+  // Masonry in newest-first order: each piece, newest first, goes into the shortest column.
+  // The top row is therefore the three newest pieces, and older ones fill the gaps below, so the
+  // order still reads newest to oldest while the columns stay balanced.
+  // Heights are estimated from the stored image size (width x height) plus room for the wall label.
+  const columns = useMemo(() => {
+    const LABEL_HEIGHT = 0.45; // wall label and spacing, as a fraction of the column width
+    const DEFAULT_RATIO = 1.25; // height / width when an image has no stored size
+
+    const built: { artwork: Artwork; index: number }[][] = Array.from({ length: columnCount }, () => []);
+    const heights: number[] = Array(columnCount).fill(0);
+
+    filteredArtworks.forEach((artwork, index) => {
+      const image = artwork.primaryImage ?? artwork.images?.[0];
+      const width = image?.metadata?.width;
+      const height = image?.metadata?.height;
+      const ratio = width && height ? height / width : DEFAULT_RATIO;
+
+      // the shortest column; on a tie the leftmost wins
+      let target = 0;
+      for (let c = 1; c < columnCount; c++) {
+        if (heights[c] < heights[target]) target = c;
+      }
+      built[target].push({ artwork, index });
+      heights[target] += ratio + LABEL_HEIGHT;
+    });
+
+    return built;
+  }, [filteredArtworks, columnCount]);
 
   const openModal = (artwork: Artwork) => {
     setSelectedArtwork(artwork);
@@ -208,13 +241,15 @@ const WorkPage: React.FC = () => {
         )}
 
         {viewMode === 'grid' ? (
-          <div className="columns-1 gap-8 sm:columns-2 lg:columns-3">
-            {filteredArtworks.map((artwork, index) => {
+          <div className="flex items-start gap-8">
+            {columns.map((column, columnIndex) => (
+              <div key={columnIndex} className="flex min-w-0 flex-1 flex-col">
+                {column.map(({ artwork, index }) => {
               const imageUrl = getPrimaryImage(artwork);
               const imageAlt = getImageAlt(artwork);
 
               return (
-                <Reveal key={artwork.id} delay={(index % 3) * 90} className="mb-14 break-inside-avoid">
+                <Reveal key={artwork.id} delay={Math.floor(index / columnCount) * 90} className="mb-14">
                   <button
                     type="button"
                     id={`artwork-${artwork.id}`}
@@ -226,6 +261,7 @@ const WorkPage: React.FC = () => {
                       {imageUrl ? (
                         <>
                           <Image
+                            loader={cloudinaryLoader}
                             src={imageUrl}
                             alt={imageAlt}
                             height={750}
@@ -277,6 +313,8 @@ const WorkPage: React.FC = () => {
                 </Reveal>
               );
             })}
+              </div>
+            ))}
           </div>
         ) : (
           <ul className="divide-y divide-rule border-y border-rule">
@@ -297,6 +335,7 @@ const WorkPage: React.FC = () => {
                       {imageUrl ? (
                         <>
                           <Image
+                            loader={cloudinaryLoader}
                             src={imageUrl}
                             alt={imageAlt}
                             width={300}

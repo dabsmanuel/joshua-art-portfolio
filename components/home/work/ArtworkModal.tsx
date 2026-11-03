@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { ArtworkResponse } from '@/types/artwork';
 import { getOptimizedImageUrl } from '@/utils/image';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 interface ArtworkModalProps {
   artwork: ArtworkResponse;
   onClose: () => void;
@@ -80,6 +81,7 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, onClose }) => {
                     aria-label="Zoom in on artwork"
                   >
                     <Image
+                      loader={cloudinaryLoader}
                       src={imageUrl}
                       alt={imageAlt}
                       width={900}

@@ -6,6 +6,7 @@ import { useArtworkImages, useAddImagesToArtwork, useRemoveImageFromArtwork, use
 import { Upload, X, Star } from 'lucide-react';
 import { ArtworkResponse, ImageData as ArtworkImageData } from '@/types/artwork';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 interface ArtworkImageManagerProps {
   artwork: ArtworkResponse;
   onClose: () => void;
@@ -108,6 +109,7 @@ export const ArtworkImageManager: React.FC<ArtworkImageManagerProps> = ({
                 {newImages.map((image, index) => (
                   <div key={index} className="relative">
                     <Image
+                      loader={cloudinaryLoader}
                       src={URL.createObjectURL(image)}
                       width={500}
                       height={500}
@@ -152,6 +154,7 @@ export const ArtworkImageManager: React.FC<ArtworkImageManagerProps> = ({
                   return images?.map((image: ArtworkImageData) => (
                     <div key={image._id ?? image.id ?? image.publicId} className="relative group">
                       <Image
+                        loader={cloudinaryLoader}
                         src={image.url}
                         alt={image.alt || artwork.title}
                         width={200}

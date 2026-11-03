@@ -3,6 +3,7 @@ import { ArtworkResponse } from '@/types/artwork';
 import Image from 'next/image';
 import { getOptimizedImageUrl } from '@/utils/image';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 interface ArtworkCardProps {
   artwork: ArtworkResponse;
   isVisible: boolean;
@@ -34,6 +35,7 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, isVisible, delay, on
       <div className="hung transition-transform duration-500 group-hover:-translate-y-1">
         <div className="relative aspect-[4/5] overflow-hidden bg-gray-200">
           <Image
+            loader={cloudinaryLoader}
             src={imageUrl}
             alt={imageAlt}
             width={600}
