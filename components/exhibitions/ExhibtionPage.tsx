@@ -10,6 +10,7 @@ import PageHeader from '../shared/PageHeader';
 import { useExhibitions } from '../../hooks/useExhibition';
 import { Exhibition, getExhibitionStatus } from '../../types/exhibition';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 type ExhibitionStatus = 'upcoming' | 'current' | 'past';
 
 interface ExhibitionView extends Exhibition {
@@ -180,6 +181,7 @@ const ExhibitionsPage: React.FC = () => {
                     <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
                       {exhibition.image ? (
                         <Image
+                          loader={cloudinaryLoader}
                           src={exhibition.image.url}
                           alt={exhibition.title}
                           fill

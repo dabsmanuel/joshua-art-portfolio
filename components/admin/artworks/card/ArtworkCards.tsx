@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ArtworkResponse } from '@/types/artwork';
 import { Edit, Trash2, Eye, Star } from 'lucide-react';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 interface ArtworkCardProps {
   artwork: ArtworkResponse;
   onEdit: (artwork: ArtworkResponse) => void;
@@ -29,6 +30,7 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({
       <div className="relative h-40 bg-gray-50 cursor-pointer" onClick={() => onView(artwork)}>
         {primaryImage ? (
           <Image
+            loader={cloudinaryLoader}
             src={primaryImage.url}
             alt={artwork.title}
             fill

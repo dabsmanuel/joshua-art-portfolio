@@ -7,12 +7,14 @@ import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { getOptimizedImageUrl } from '@/utils/image';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 export interface ArtworkImage {
   url: string;
   alt: string;
   isPrimary: boolean;
   _id: string;
   id: string;
+  metadata?: { width?: number; height?: number };
 }
 
 export interface Artwork {
@@ -158,6 +160,7 @@ export const ArtworkModal: React.FC<ArtworkModalProps> = ({ artwork, isOpen, onC
                 {imageUrl ? (
                   <div className="hung">
                     <Image
+                      loader={cloudinaryLoader}
                       src={imageUrl}
                       alt={imageAlt}
                       width={900}

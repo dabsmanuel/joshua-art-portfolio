@@ -9,6 +9,7 @@ import PageHeader from '../shared/PageHeader';
 import { useArtworks } from '../../hooks/useArtwork';
 import { ArtworkModal, StatusLabel, type Artwork } from '../work/ArtworkDetail';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 export interface CommissionTier {
   name: string;
   price: string;
@@ -122,6 +123,7 @@ const CommissionPage: React.FC<CommissionPageProps> = ({
                     <div className="hung transition-transform duration-500 group-hover:-translate-y-1">
                       {imageUrl ? (
                         <Image
+                          loader={cloudinaryLoader}
                           src={imageUrl}
                           alt={artwork.primaryImage?.alt || artwork.title}
                           width={600}

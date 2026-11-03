@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ArtworkResponse } from '@/types/artwork';
 import { X } from 'lucide-react';
 
+import { cloudinaryLoader } from '@/utils/cloudinaryLoader';
 interface ArtworkDetailModalProps {
   artwork: ArtworkResponse;
   onClose: () => void;
@@ -39,6 +40,7 @@ export const ArtworkDetailModal: React.FC<ArtworkDetailModalProps> = ({
             <div>
               {primaryImage ? (
                 <Image
+                  loader={cloudinaryLoader}
                   src={primaryImage.url}
                   alt={artwork.title}
                   width={400}
